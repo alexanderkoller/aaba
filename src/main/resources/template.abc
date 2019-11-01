@@ -1,0 +1,21 @@
+%abc-2.1
+X:1
+T:{{ title }}
+C:{{ composer }}
+M:{{ timesig }}
+L:1/8
+K:{{ key }}
+V:Tn middle=B,  clef=treble-8   name="Tn"  snm=""
+V:Ld middle=B,  clef=treble-8   name="Ld"  snm=""
+V:Br middle=D,  clef=bass       name="Br"  snm=""
+V:Bs middle=D,  clef=bass       name="Bs"  snm=""
+%%score (Tn Ld) (Br Bs)
+V:Tn
+  {{ Tn }}
+V:Ld
+  {{ Ld }}
+V:Br
+  {{ Br }}
+V:Bs
+  {{ Bs }}
+
