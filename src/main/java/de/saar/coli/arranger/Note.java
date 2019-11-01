@@ -2,6 +2,7 @@ package de.saar.coli.arranger;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -37,6 +38,18 @@ public class Note {
         }
     }
 
+    public Note sharp(Note base) {
+        return Note.create(base.midiNumber+1, base.duration);
+    }
+
+    public Note flat(Note base) {
+        return Note.create(base.midiNumber-1, base.duration);
+    }
+
+    public Note add(int offset) {
+        return Note.create(midiNumber+offset, duration);
+    }
+
     public int getRelativeNote() {
         return midiNumber % 12;
     }
@@ -60,5 +73,19 @@ public class Note {
     @Override
     public String toString() {
         return getNoteName(getRelativeNote()) + getOctave() + ":" + duration;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Note note = (Note) o;
+        return midiNumber == note.midiNumber &&
+                duration == note.duration;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(midiNumber, duration);
     }
 }

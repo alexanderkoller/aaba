@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class AbcWriter {
     public static void main(String[] args) throws IOException {
-        Score s = new Score();
+        Score s = new Score("Test Song", "AK", "C", 4);
 
         s.addNote(0, Note.create("E4", 2));
         s.addNote(1, Note.create("C4", 2) );
@@ -47,22 +47,22 @@ public class AbcWriter {
 
         PrintWriter w = new PrintWriter(new OutputStreamWriter(System.out));
         AbcWriter abc = new AbcWriter();
-        abc.write(s, "Test Song", "AK", "C", 4, w);
+        abc.write(s, w);
         w.println();
         w.close();
     }
 
-    public void write(Score score, String title, String composer, String key, int quartersPerMeasure, Writer writer) throws IllegalArgumentException, IOException {
+    public void write(Score score, Writer writer) throws IllegalArgumentException, IOException {
         CarrotEngine engine = new CarrotEngine(new Configuration.Builder()
                 .setResourceLocator(makeResourceLocator())
                 .build());
 
-        int eightsPerMeasure = quartersPerMeasure*2;
+        int eightsPerMeasure = score.getQuartersPerMeasure()*2;
         Map<String,Object> bindings = new HashMap<>();
-        bindings.put("title", title);
-        bindings.put("composer", composer);
-        bindings.put("key", key);
-        bindings.put("timesig", Integer.toString(quartersPerMeasure) + "/4");
+        bindings.put("title", score.getTitle());
+        bindings.put("composer", score.getComposer());
+        bindings.put("key", score.getKey());
+        bindings.put("timesig", Integer.toString(score.getQuartersPerMeasure()) + "/4");
 
         for( int i = 0; i < 4; i++ ) {
             List<Note> part = score.getPart(i);
@@ -93,6 +93,7 @@ public class AbcWriter {
         }
     }
 
+    // TODO: accidentals, ^, = and _ are used (before a note) to notate respectively a sharp, natural or flat.
     private String abcNote(Note note) {
         String n = Note.getNoteName(note.getRelativeNote());
         StringBuilder buf = new StringBuilder();
