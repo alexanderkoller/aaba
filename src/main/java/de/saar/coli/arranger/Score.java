@@ -11,6 +11,7 @@ public class Score {
     private String title;
     private String composer;
     private int quartersPerMeasure;
+    private List<Pair<Integer,Chord>> chords = new ArrayList<>();
 
     public Score(String title, String composer, String key, int quartersPerMeasure) {
         this.title = title;
@@ -61,6 +62,21 @@ public class Score {
 
     public void setQuartersPerMeasure(int quartersPerMeasure) {
         this.quartersPerMeasure = quartersPerMeasure;
+    }
+
+    public void addChord(int startTime, Chord chord) {
+        chords.add(new Pair(startTime, chord));
+    }
+
+    public Chord getChordAtTime(int time) {
+        for( int i = 0; i < chords.size(); i++ ) {
+            if( chords.get(i).getLeft() <= time
+                && (i+1 == chords.size() || chords.get(i+1).getLeft() > time) ) {
+                return chords.get(i).getRight();
+            }
+        }
+
+        return null;
     }
 
     @Override

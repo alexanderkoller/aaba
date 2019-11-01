@@ -45,6 +45,20 @@ public class TestScore {
         assertEquals(gold, ld);
     }
 
+    @Test
+    public void testChords() {
+        Score score = new Score("", "", "", 4);
+
+        score.addChord(0, Chord.lookup("C"));
+        score.addChord(4, Chord.lookup("G7"));
+
+        assertEquals(Chord.lookup("C"), score.getChordAtTime(0));
+        assertEquals(Chord.lookup("C"), score.getChordAtTime(1));
+        assertNotEquals(Chord.lookup("C"), score.getChordAtTime(4));
+        assertEquals(Chord.lookup("G7"), score.getChordAtTime(4));
+        assertEquals(Chord.lookup("G7"), score.getChordAtTime(7));
+    }
+
     private static final String ABC =
             "%abc-2.1\n" +
                     "T:Test Song\n" +
