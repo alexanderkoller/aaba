@@ -18,4 +18,9 @@ public class Chord {
         Chord chord = (Chord) o;
         return Objects.equals(str, chord.str);
     }
+
+    @Override
+    public String toString() {
+        return str;
+    }
 }

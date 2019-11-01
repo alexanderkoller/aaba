@@ -47,20 +47,32 @@ public class AbcParser {
                         break;
                 }
             } else {
+                int timeInEighths = 0;
                 List<Note> leadPart = score.getPart(1);
                 String[] potentialNotes = line.split("\\s+");
+
                 for (String pn : potentialNotes) {
                     if (pn.startsWith("|")) {
                         // skip barlines
+                    } else if( pn.startsWith("\"")) {
+                        // chord
+                        score.addChord(timeInEighths, parseAbcChord(pn));
                     } else {
+                        // note
                         Note note = parseAbcNote(pn);
                         leadPart.add(note);
+                        timeInEighths += note.getDuration();
                     }
                 }
             }
         }
 
         return score;
+    }
+
+    private Chord parseAbcChord(String chord) {
+        chord = chord.substring(1, chord.length()-1);
+        return Chord.lookup(chord);
     }
 
     private Note parseAbcNote(String note) {

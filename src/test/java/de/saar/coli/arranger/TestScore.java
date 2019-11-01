@@ -43,6 +43,10 @@ public class TestScore {
                 );
 
         assertEquals(gold, ld);
+
+        assertEquals(Chord.lookup("C"), score.getChordAtTime(0));
+        assertEquals(Chord.lookup("C"), score.getChordAtTime(7));
+        assertEquals(Chord.lookup("G7"), score.getChordAtTime(8));
     }
 
     @Test
@@ -65,7 +69,7 @@ public class TestScore {
                     "C:AK\n" +
                     "M:4/4\n" +
                     "K:C\n" +
-                    "C,2 d''2 _E2 ^F2 | C2 D2 |]";
+                    "\"C\" C,2 d''2 _E2 ^F2 | \"G7\" C2 D2 |]";
 
     private static final String S1 = "Tn: E5:2\n" +
             "Ld: C5:2\n" +
