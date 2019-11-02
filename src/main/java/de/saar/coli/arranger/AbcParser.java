@@ -25,7 +25,7 @@ public class AbcParser {
         Score score = new Score("", "", "", 4);
         String line;
         int timeInEighths = 0;
-        Key key = Key.C;
+        Key key = Key.lookup("C");
 
         while ((line = r.readLine()) != null) {
             Matcher m = LINE_PATTERN.matcher(line);
@@ -45,7 +45,7 @@ public class AbcParser {
                         break;
                     case "K":
                         score.setKey(value);
-                        key = Key.Lookup.lookup(value);
+                        key = Key.lookup(value);
                         break;
                     case "M":
                         score.setQuartersPerMeasure(Integer.parseInt(value.substring(0, 1)));
@@ -82,7 +82,6 @@ public class AbcParser {
             }
         }
 
-        System.err.println("words: " + score.getLyrics());
         return score;
     }
 

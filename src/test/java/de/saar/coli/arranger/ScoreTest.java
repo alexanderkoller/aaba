@@ -8,7 +8,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class TestScore {
+public class ScoreTest {
     @Test
     public void testNotes() {
         Score s = new Score("Test Song", "AK", "C", 4);

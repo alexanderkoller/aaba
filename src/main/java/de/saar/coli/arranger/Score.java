@@ -104,6 +104,10 @@ public class Score {
         return null;
     }
 
+    public List<Pair<Integer,Chord>> getAllChords() {
+        return chords;
+    }
+
     public void foreachNoteAndChord(int part, BiConsumer<Note,Chord> fn) {
         int time = 0;
 

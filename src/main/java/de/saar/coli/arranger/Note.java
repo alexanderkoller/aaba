@@ -74,6 +74,64 @@ public class Note {
         return NOTE_NAMES.get(relativeNote);
     }
 
+    public String getNoteName(Key key) {
+        return getNoteName(key, false);
+    }
+
+    /**
+     * Returns the name of this note in the given key. Accidentals are spelled
+     * with respect to the key, and are represented as "F#", "Bb", etc.
+     *
+     * @param key
+     * @return
+     */
+    public String getNoteName(Key key, boolean forceNatural) {
+        assert key != null;
+
+        if( key.notesInKey.contains(getRelativeNote()) ) {
+            // note exists in key
+
+            Integer baseNote = key.accidentalNoteToBaseNote.get(getRelativeNote());
+            if (baseNote == null) {
+                // note was not accidental-modified away from base note, so does not need an accidental
+                return NOTE_NAMES.get(getRelativeNote()) + (forceNatural ? "@" : "");
+            } else {
+                // note in key, with accidental -> look up spelling in key
+                int accidental = getRelativeNote() - baseNote;
+                return NOTE_NAMES.get(baseNote) + accidentalString(accidental, key);
+            }
+        } else { // note does not exist in key
+            // does accidental-modified note exist in key as an accidental-modified note?
+            int noteWithAccidental = (getRelativeNote() + key.direction) % 12;
+            if( key.accidentalNoteToBaseNote.containsKey(noteWithAccidental)) {
+                // spell as natural
+                return NOTE_NAMES.get(getRelativeNote()) + "@";
+            } else {
+                // note is foreign to key, spell with accidental of usual type in key
+                int baseNote = (getRelativeNote() - key.direction)%12;
+                return NOTE_NAMES.get(baseNote) + accidentalString(key.direction, key);
+            }
+        }
+    }
+
+    private static String accidentalString(int accidental, Key key) {
+        if( key.direction == +1 ) {
+            // key with sharps
+            switch(accidental) {
+                case +1: return "#";
+                case -1: return "@";
+            }
+        } else {
+            // key with flats
+            switch(accidental) {
+                case +1: return "@";
+                case -1: return "b";
+            }
+        }
+
+        throw new IllegalArgumentException("Unexpected accidental " + accidental + " in key " + key);
+    }
+
     public static int getNoteId(String noteName) {
         return NOTE_NAMES.indexOf(noteName);
     }

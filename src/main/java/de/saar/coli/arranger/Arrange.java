@@ -30,13 +30,13 @@ public class Arrange {
                 buf.append(" ");
             }
 
-            System.out.printf("%s %s -> %s\n", note, chord, buf.toString());
+//            System.out.printf("%s %s -> %s\n", note, chord, buf.toString());
         });
 
         Arrange arranger = new Arrange();
         Score bestArrangedScore = arranger.arrange(score);
 
-        System.out.println(bestArrangedScore);
+//        System.out.println(bestArrangedScore);
 
         AbcWriter abcw = new AbcWriter();
         FileWriter fw = new FileWriter("arranged.abc");
@@ -47,13 +47,13 @@ public class Arrange {
 
     private Score arrange(Score score) {
         List<List<List<Note>>> possibleNotes = computePossibleNotes(score);
-        for (List<List<Note>> notesAtTime : possibleNotes) {
-            System.out.println();
-            System.out.println("Tn: " + notesAtTime.get(TENOR));
-            System.out.println("Ld: " + notesAtTime.get(LEAD));
-            System.out.println("Br: " + notesAtTime.get(BARI));
-            System.out.println("Bs: " + notesAtTime.get(BASS));
-        }
+//        for (List<List<Note>> notesAtTime : possibleNotes) {
+//            System.out.println();
+//            System.out.println("Tn: " + notesAtTime.get(TENOR));
+//            System.out.println("Ld: " + notesAtTime.get(LEAD));
+//            System.out.println("Br: " + notesAtTime.get(BARI));
+//            System.out.println("Bs: " + notesAtTime.get(BASS));
+//        }
 
         int n = score.countNotes(LEAD);
         assert n == possibleNotes.size();
@@ -63,7 +63,7 @@ public class Arrange {
         int time = 0;
 
         for (int pos = 0; pos < n; pos++) {
-            System.err.printf("Processing position %d ...\n", pos);
+//            System.err.printf("Processing position %d ...\n", pos);
 
             List<List<Note>> notesHere = possibleNotes.get(pos);
             Chord chordHere = score.getChordAtTime(time);
@@ -92,7 +92,7 @@ public class Arrange {
                                             int transitionScore = scoreTransition(oldEntry.getKey().lastNotes, notes);
                                             int totalScore = itemScore + transitionScore + oldEntry.getValue();
 
-                                            if (totalScore >= -20) {
+                                            if (totalScore >= -100) {
                                                 Item newItem = new Item(notes);
                                                 Backpointer bp = new Backpointer(oldEntry.getKey(), totalScore);
                                                 backpointersNext.getBackpointers().put(newItem, bp);
@@ -112,10 +112,6 @@ public class Arrange {
             }
 
             time += score.getPart(LEAD).get(pos).getDuration();
-            System.err.printf("Bp after pos %d: %s\n", pos, backpointersNext);
-
-//            assert bestScoresNext.keySet().equals(backpointersNext.getBackpointers().keySet());
-
             bestScores = bestScoresNext;
             backpointers = backpointersNext;
         }
@@ -124,8 +120,10 @@ public class Arrange {
         // show goal items
         List<Map.Entry<Item, Integer>> sortedEntries = new ArrayList<>(bestScores.entrySet());
         Collections.sort(sortedEntries, Comparator.comparing(Map.Entry::getValue));
+        Map.Entry<Item, Integer> bestGoalItem = sortedEntries.get(sortedEntries.size() - 1);
+        System.out.printf("Best arrangement has score %d\n", bestGoalItem.getValue());
 
-        Score bestArrangedScore = extractBestScore(sortedEntries.get(sortedEntries.size() - 1).getKey(), backpointers, score);
+        Score bestArrangedScore = extractBestScore(bestGoalItem.getKey(), backpointers, score);
         return bestArrangedScore;
     }
 
@@ -151,7 +149,7 @@ public class Arrange {
         List<Note[]> notes = new ArrayList<>();
         Item item = bestFinalItem;
 
-        System.err.printf("[%03d] %s\n", notes.size(), item);
+//        System.err.printf("[%03d] %s\n", notes.size(), item);
         notes.add(item.lastNotes);
 
         while (backpointers != null) {
@@ -178,6 +176,10 @@ public class Arrange {
         ret.setKey(originalScore.getKey());
         ret.setQuartersPerMeasure(originalScore.getQuartersPerMeasure());
         ret.setLyrics(originalScore.getLyrics());
+
+        for( Pair<Integer,Chord> chord : originalScore.getAllChords()) {
+            ret.addChord(chord.getLeft(), chord.getRight());
+        }
 
         for (Note[] notesHere : notes) {
             for (int part = 0; part < 4; part++) {
@@ -236,8 +238,8 @@ public class Arrange {
 
         // disprefer unison
         Set<Integer> differentAbsoluteNotes = new HashSet<>(List.of(tn.getAbsoluteNote(), ld.getAbsoluteNote(), br.getAbsoluteNote(), bs.getAbsoluteNote()));
-        if (differentAbsoluteNotes.size() < chord.getNotes().size()) {
-            score -= 30;
+        if (differentAbsoluteNotes.size() < 4) {
+            score -= 50;
         }
 
         // disprefer very wide spread
@@ -334,91 +336,3 @@ public class Arrange {
         }
     }
 }
-
-/*
-
-
-        Map<Item,Integer>[][] bestScores = new Map[n+1][n+1];
-        ListMultimap<Item,Backpointer>[][] chart = new ListMultimap[n+1][n+1];
-
-        // initialize "lexical" cells
-        int time = 0;
-        for( int pos = 0; pos < n; pos++ ) {
-            List<List<Note>> notesHere = possibleNotes.get(pos);
-            Chord chordHere = score.getChordAtTime(time);
-
-            ListMultimap<Item,Backpointer> itemsHere = ArrayListMultimap.create();
-            chart[pos][pos+1] = itemsHere;
-
-            Map<Item,Integer> bestScoresHere = new HashMap<>();
-            bestScores[pos][pos+1] = bestScoresHere;
-
-            System.out.printf("\nITEMS FOR POSITION %d\n", pos);
-
-            for( Note bs : notesHere.get(BASS)) {
-                if( chordHere.isAllowedBassNote(bs)) {
-                    for (Note ld : notesHere.get(LEAD)) {
-                        for (Note br : notesHere.get(BARI)) {
-                            for (Note tn : notesHere.get(TENOR)) {
-                                int itemScore = scoreLexicalChord(tn, ld, br, bs, chordHere);
-
-                                if (itemScore > Integer.MIN_VALUE) {
-                                    Note[] notes = new Note[]{tn, ld, br, bs};
-                                    Item it = new Item(notes, notes);
-                                    itemsHere.put(it, null); // null backpointer = lexical cell
-                                    bestScoresHere.put(it, itemScore);
-                                    System.out.printf("  %s\tscore=%d\n", Arrays.toString(notes), itemScore);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            time += score.getPart(LEAD).get(pos).getDuration();
-        }
-
-        // iterate binary combinations
-        for( int width = 2; width <= n; width++ ) {
-            System.err.printf("Generating items of width %d ...\n", width);
-
-            for( int left = 0; left <= n-width; left++ ) {
-                ListMultimap<Item,Backpointer> itemsHere = ArrayListMultimap.create();
-                chart[left][left+width] = itemsHere;
-
-                Map<Item,Integer> bestScoresHere = new HashMap<>();
-                bestScores[left][left+width] = bestScoresHere;
-
-                for( int split = 1; split < width; split++ ) {
-                    Map<Item,Integer> leftItems = bestScores[left][left+split];
-                    Map<Item,Integer> rightItems = bestScores[left+split][left+width];
-
-                    for( Map.Entry<Item,Integer> leftEntry : leftItems.entrySet() ) {
-                        for( Map.Entry<Item,Integer> rightEntry : rightItems.entrySet() ) {
-                            int transitionScore = scoreTransition(leftEntry.getKey().lastNotes, rightEntry.getKey().firstNotes);
-                            int totalScore = transitionScore + leftEntry.getValue() + rightEntry.getValue();
-
-                            if( totalScore > -100 ) { // discard terrible items
-                                Item newItem = new Item(leftEntry.getKey().firstNotes, rightEntry.getKey().lastNotes);
-                                Backpointer bp = new Backpointer(leftEntry.getKey(), rightEntry.getKey(), totalScore);
-
-                                // update best score for this item
-                                Integer bestScoreForItem = bestScoresHere.get(newItem);
-                                if( bestScoreForItem == null || bestScoreForItem < totalScore ) {
-                                    bestScoresHere.put(newItem, totalScore);
-                                }
-
-                                // record backpointers
-                                itemsHere.put(newItem, bp);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // show goal items
-        for( Map.Entry<Item,Integer> goalEntry : bestScores[0][n].entrySet() ) {
-            System.out.printf("\nGOAL ITEM: %s, best score %d\n", goalEntry.getKey(), goalEntry.getValue());
-        }
- */

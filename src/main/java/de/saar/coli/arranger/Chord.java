@@ -8,26 +8,28 @@ public class Chord {
     private static final ChordType[] SUFFIX_CHECKING_ORDER = new ChordType[] { ChordType.DIMINISHED, ChordType.HALF_DIMINISHED, ChordType.MINOR_SEVENTH, ChordType.MINOR_SIXTH, ChordType.MAJOR_SEVENTH, ChordType.ADDNINE, ChordType.SEVEN_NINE, ChordType.SIXTH, ChordType.MINOR, ChordType.SEVENTH, ChordType.MAJOR };
 
     public static enum ChordType {
-        MAJOR("", List.of(0,7), 0, 4, 7),
-        SIXTH("6", List.of(0,7), 0, 4, 7, 9),
-        SEVENTH("7", List.of(0,7), 0, 4, 7, 10),
-        ADDNINE("add9", List.of(0,7), 0, 4, 7, 2),
-        SEVEN_NINE("9", List.of(0,7), 4, 7, 10, 2),
-        MAJOR_SEVENTH("mj7", List.of(0,7), 0, 4, 7, 11),
-        MINOR("m", List.of(0, 3, 7), 0, 3, 7),
-        MINOR_SIXTH("m6", List.of(0,3,7), 0, 3, 7, 9),
-        MINOR_SEVENTH("m7", List.of(0,7), 0, 3, 7, 10),
-        HALF_DIMINISHED("x7", List.of(0), 0, 3, 6, 10),
-        DIMINISHED("07", List.of(0, 3, 6, 9), 0, 3, 6, 9)
+        MAJOR("", "", List.of(0,7), 0, 4, 7),
+        SIXTH("6", "", List.of(0,7), 0, 4, 7, 9),
+        SEVENTH("7", "", List.of(0,7), 0, 4, 7, 10),
+        ADDNINE("add9", "", List.of(0,7), 0, 4, 7, 2),
+        SEVEN_NINE("9", "", List.of(0,7), 4, 7, 10, 2),
+        MAJOR_SEVENTH("mj7", "", List.of(0,7), 0, 4, 7, 11),
+        MINOR("m", "m", List.of(0, 3, 7), 0, 3, 7),
+        MINOR_SIXTH("m6", "m", List.of(0,3,7), 0, 3, 7, 9),
+        MINOR_SEVENTH("m7", "m", List.of(0,7), 0, 3, 7, 10),
+        HALF_DIMINISHED("x7", "m", List.of(0), 0, 3, 6, 10),
+        DIMINISHED("07", "", List.of(0, 3, 6, 9), 0, 3, 6, 9)
         ;
 
         public final List<Integer> chordNotes;
         public final String name;
         public final Set<Integer> allowedBassNotes;
+        public final String mode;
 
-        private ChordType(String name, List<Integer> allowedBassNotes, Integer... notes) {
+        private ChordType(String name, String mode, List<Integer> allowedBassNotes, Integer... notes) {
             this.name = name;
             this.chordNotes = Arrays.asList(notes);
+            this.mode = mode;
             this.allowedBassNotes = new HashSet<>(allowedBassNotes);
         }
     }
@@ -69,6 +71,20 @@ public class Chord {
     public boolean isAllowedBassNote(Note note) {
         int relativeNote = (note.getAbsoluteNote() - root)%12;
         return type.allowedBassNotes.contains(relativeNote);
+    }
+
+    /**
+     * Returns the key to which this chord belongs.
+     * Examples:
+     * - chord Cmaj7 -> key C major
+     * - chord Am6 -> key A minor (= C major)
+     *
+     * These keys can be used to choose accidentals correctly.
+     *
+     * @return
+     */
+    public Key getKey() {
+        return Key.lookup(Note.getNoteName(root) + type.mode);
     }
 
     public int getRoot() {

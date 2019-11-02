@@ -1,40 +1,62 @@
 package de.saar.coli.arranger;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import com.google.common.base.MoreObjects;
 
-public enum Key {
-    C("C", "Am", 0),
-    G("G", "Em", +1, "F"),
-    D("D", "Bm", +1, "F", "C"),
-    A("A", "F#m", +1, "F", "C", "G"),
-    E("E", "C#m", +1, "F", "C", "G", "D"),
-    B("B", "G#m", +1, "F", "C", "G", "D", "A"),
-    Fsharp("F#", "D#m", +1, "F", "C", "G", "D", "A", "E"),
-    F("F", "Dm", -1, "B"),
-    Bb("Bb", "Gm", -1, "B", "E"),
-    Eb("Eb", "Cm", -1, "B", "E", "A"),
-    Ab("Ab", "Fm", -1, "B", "E", "A", "D"),
-    Db("Db", "Bbm", -1, "B", "E", "A", "D", "G"),
-    Gb("Gb", "Ebm", -1, "B", "E", "A", "D", "G", "C")
-    ;
+import java.util.*;
+
+public class Key {
+    static {
+        keyTable = new HashMap<>();
+        BASE_NOTES = new String[] { "C", "D", "E", "F", "G", "A", "B"};
+
+        add("C", "Am", new Key(+1));
+        add("G", "Em", new Key(+1, "F"));
+        add("D", "Bm", new Key(+1, "F", "C"));
+        add("A", "F#m", new Key(+1, "F", "C", "G"));
+        add("E", "C#m", new Key(+1, "F", "C", "G", "D"));
+        add("B", "G#m", new Key(+1, "F", "C", "G", "D", "A"));
+        add("F#", "D#m", new Key(+1, "F", "C", "G", "D", "A", "E"));
+        add("F", "Dm", new Key(-1, "B"));
+        add("Bb", "Gm", new Key(-1, "B", "E"));
+        add("Eb", "Cm", new Key(-1, "B", "E", "A"));
+        add("Ab", "Fm", new Key(-1, "B", "E", "A", "D"));
+        add("Db", "Bbm", new Key(-1, "B", "E", "A", "D", "G"));
+        add("Gb", "Ebm", new Key(-1, "B", "E", "A", "D", "G", "C"));
+    }
 
     public final Map<String,Integer> accidentals;
-    public final String majorName;
-    public final String minorName;
+    public final Set<Integer> notesInKey;
+    public final Map<Integer,Integer> accidentalNoteToBaseNote;
+    public final int direction;
+    public String majorName;
 
-    private Key(String majorName, String minorName, int direction, String... notesWithAccidentals) {
+    private static void add(String majorName, String minorName, Key key) {
+        keyTable.put(majorName, key);
+        keyTable.put(minorName, key);
+        key.majorName = majorName;
+    }
+
+
+
+    private Key(int direction, String... notesWithAccidentals) {
         accidentals = new HashMap<>();
-        this.majorName = majorName;
-        this.minorName = minorName;
+        this.direction = direction;
 
         for( String note : notesWithAccidentals ) {
             accidentals.put(note, direction);
         }
 
-        Lookup.put(majorName, this);
-        Lookup.put(minorName, this);
+        notesInKey = new HashSet<>();
+        accidentalNoteToBaseNote = new HashMap<>();
+        for( String note : BASE_NOTES ) {
+            Note n = Note.create(note, 0, 0);
+            Note nWithAccidental = n.add(getAccidentalForNote(note));
+            notesInKey.add(nWithAccidental.getAbsoluteNote() % 12);
+
+            if( nWithAccidental.getRelativeNote() != n.getRelativeNote() ) {
+                accidentalNoteToBaseNote.put(nWithAccidental.getRelativeNote(), n.getRelativeNote());
+            }
+        }
     }
 
     public int getAccidentalForNote(String note) {
@@ -47,15 +69,25 @@ public enum Key {
         }
     }
 
-    public static class Lookup {
-        private static final Map<String,Key> lookup = new HashMap<>();
+    public int getBaseNote(int relativeNote) {
+        Integer baseNote = accidentalNoteToBaseNote.get(relativeNote);
 
-        private static void put(String name, Key key) {
-            lookup.put(name, key);
+        if( baseNote == null ) {
+            return relativeNote;
+        } else {
+            return baseNote;
         }
+    }
 
-        public static Key lookup(String name) {
-            return lookup.get(name);
-        }
+    public static Key lookup(String name) {
+        return keyTable.get(name);
+    }
+
+    private static final String[] BASE_NOTES;
+    private static final Map<String,Key> keyTable;
+
+    @Override
+    public String toString() {
+        return majorName;
     }
 }

@@ -18,15 +18,15 @@ public class AbcWriter {
         Score s = new Score("Test Song", "AK", "C", 4);
 
         s.addNote(0, Note.create("E4", 2));
-        s.addNote(1, Note.create("C4", 2) );
+        s.addNote(1, Note.create("C4", 2));
         s.addNote(2, Note.create("G3", 2));
         s.addNote(3, Note.create("C3", 2));
 
-        s.addNote(1, Note.create("D4", 2) );
-        s.addNote(1, Note.create("E4", 2) );
-        s.addNote(1, Note.create("F4", 2) );
-        s.addNote(1, Note.create("C4", 2) );
-        s.addNote(1, Note.create("D4", 2) );
+        s.addNote(1, Note.create("D4", 2));
+        s.addNote(1, Note.create("E4", 2));
+        s.addNote(1, Note.create("F4", 2));
+        s.addNote(1, Note.create("C4", 2));
+        s.addNote(1, Note.create("D4", 2));
 
         s.addNote(0, Note.create("E4", 2));
         s.addNote(0, Note.create("E4", 2));
@@ -57,27 +57,33 @@ public class AbcWriter {
                 .setResourceLocator(makeResourceLocator())
                 .build());
 
-        int eightsPerMeasure = score.getQuartersPerMeasure()*2;
-        Map<String,Object> bindings = new HashMap<>();
+        int eightsPerMeasure = score.getQuartersPerMeasure() * 2;
+        Map<String, Object> bindings = new HashMap<>();
         bindings.put("title", score.getTitle());
         bindings.put("composer", score.getComposer());
         bindings.put("key", score.getKey());
         bindings.put("timesig", Integer.toString(score.getQuartersPerMeasure()) + "/4");
         bindings.put("lyrics", String.join(" ", score.getLyrics()));
 
-        for( int i = 0; i < 4; i++ ) {
+        Key key = Key.lookup(score.getKey());
+
+        for (int i = 0; i < 4; i++) {
             List<Note> part = score.getPart(i);
             StringBuilder buf = new StringBuilder();
-            int eightsInMeasure = 0;
+            int timeSinceStart = 0; // in 1/8 notes
+            int timeInMeasure = 0;
 
-            for( Note note : part ) {
+            for (Note note : part) {
+                Chord currentChord = score.getChordAtTime(timeSinceStart);
+
                 buf.append(" ");
-                buf.append(abcNote(note));
-                eightsInMeasure += note.getDuration();
+                buf.append(abcNote(note, key, currentChord));
 
-                if( eightsInMeasure >= score.getQuartersPerMeasure()*2 ) {
+                timeSinceStart += note.getDuration();
+                timeInMeasure += note.getDuration();
+                if (timeInMeasure >= score.getQuartersPerMeasure() * 2) {
                     buf.append(" |");
-                    eightsInMeasure = 0;
+                    timeInMeasure = 0;
                 }
             }
 
@@ -94,27 +100,56 @@ public class AbcWriter {
         }
     }
 
-    private String abcNote(Note note) {
-        String n = Note.getNoteName(note.getRelativeNote());
+    private String abcNote(Note note, Key key, Chord currentChord) {
+        String n = null;
         StringBuilder buf = new StringBuilder();
+        Key chordKey = currentChord == null ? null : currentChord.getKey();
 
-        if( n.length() == 2 ) {
-            // spell accidental for ABC
-            switch(n.charAt(1)) {
-                case 'b': n = "_" + n.substring(0,1); break;
-                case '#': n = "^" + n.substring(0,1); break;
-                // TODO naturals in keys that require them? spell as '='
-            }
+        // get note name with accidentals, in standard spelling
+        if (key.notesInKey.contains(note.getRelativeNote())) {
+            // note exists in key, use spelling from key;
+            // in ABC notation, this means that note is spelled unmodified
+            int baseNote = key.getBaseNote(note.getRelativeNote());
+            n = Note.getNoteName(baseNote);
+        } else if (chordKey != null && chordKey.notesInKey.contains(note.getRelativeNote())) {
+            // note exists in key of current chord, use chord key's accidental
+            // (only if chord is available in score)
+            n = note.getNoteName(chordKey, true);
+
+
+
+
+            System.err.printf("%s in chord key %s -> spell as %s\n", Note.getNoteName(note.getRelativeNote()), chordKey, n);
+        } else {
+            // note exists in neither, use fallback tactics for key
+            n = note.getNoteName(key);
+            System.err.printf("%s fallback spell as %s (chord key was %s)\n", Note.getNoteName(note.getRelativeNote()), n, chordKey);
         }
 
-        if( note.getOctave() >= 5 ) {
+        // convert standard spelling of accidentals to ABC notation
+        char possibleAccidental = n.charAt(n.length()-1);
+        switch(possibleAccidental) {
+            case '#':
+                n = "^" + n.substring(0, n.length() - 1);
+                break;
+            case 'b':
+                n = "_" + n.substring(0, n.length() - 1);
+                break;
+            case '@':
+                n = "=" + n.substring(0, n.length() - 1);
+                break;
+        }
+
+        assert n.length() <= 2; // no _Gb or such
+
+        if (note.getOctave() >= 5) {
             buf.append(n.toLowerCase());
-            for( int i = 5; i < note.getOctave(); i++ ) {
+            for (int i = 5; i < note.getOctave(); i++) {
                 buf.append("'");
             }
         } else {
             buf.append(n.toUpperCase());
-            for( int i = 4; i > note.getOctave(); i-- ) {
+            for (int i = 4; i > note.getOctave(); i--) {
                 buf.append(",");
             }
         }
@@ -151,7 +186,7 @@ public class AbcWriter {
             reader.close();
 
             return buffer.toString();
-        } catch(IOException e) {
+        } catch (IOException e) {
             return null;
         }
     }
