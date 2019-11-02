@@ -4,7 +4,6 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.Reader;
-import java.util.Map;
 
 public class Config {
     private String arranger;
@@ -31,18 +30,18 @@ public class Config {
     }
 
     public static class Scores {
-        private int harmonyJumps;
+        private int harmonyLeaps;
         private int parallelOctaves;
         private int tenorCrossing;
         private int unisonNotes;
         private int wideSpread;
 
-        public int getHarmonyJumps() {
-            return harmonyJumps;
+        public int getHarmonyLeaps() {
+            return harmonyLeaps;
         }
 
-        public void setHarmonyJumps(int harmonyJumps) {
-            this.harmonyJumps = harmonyJumps;
+        public void setHarmonyLeaps(int harmonyLeaps) {
+            this.harmonyLeaps = harmonyLeaps;
         }
 
         public int getParallelOctaves() {

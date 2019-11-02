@@ -17,6 +17,6 @@ public class ConfigTest {
         Config config = Config.read(r);
 
         assertEquals("Automatically arranged by Alexander's Arranger", config.getArranger());
-        assertEquals(-20, config.getScores().getHarmonyJumps());
+        assertEquals(-20, config.getScores().getHarmonyLeaps());
     }
 }

@@ -197,7 +197,7 @@ public class Arrange {
         for (int part = 0; part < 4; part++) {
             if (part == TENOR || part == BARI) {
                 if (from[part].getAbsoluteDistance(to[part]) > 3) {
-                    score += config.getScores().getHarmonyJumps();
+                    score += config.getScores().getHarmonyLeaps();
                 }
             }
         }
