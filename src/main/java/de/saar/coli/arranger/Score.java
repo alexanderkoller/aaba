@@ -1,7 +1,14 @@
 package de.saar.coli.arranger;
 
+import abcj.ABCJ;
+import abcj.model.Library;
+import abcj.model.Tune;
+import abcj.model.TuneBook;
+import abcj.model.TuneList;
+import abcj.ui.MainGUI;
+import abcj.ui.MainPane;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Score {
@@ -65,7 +72,7 @@ public class Score {
     }
 
     public void addChord(int startTime, Chord chord) {
-        chords.add(new Pair(startTime, chord));
+        chords.add(new Pair<>(startTime, chord));
     }
 
     public Chord getChordAtTime(int time) {
@@ -95,4 +102,88 @@ public class Score {
 
         return buf.toString();
     }
+
+    public static void main(String[] args) {
+        Score s = new Score("Test Song", "AK", "C", 4);
+
+        s.addNote(0, Note.create("E4", 2));
+        s.addNote(1, Note.create("C4", 2) );
+        s.addNote(2, Note.create("G3", 2));
+        s.addNote(3, Note.create("C3", 2));
+
+        s.addNote(1, Note.create("D4", 2) );
+        s.addNote(1, Note.create("E4", 2) );
+        s.addNote(1, Note.create("F4", 2) );
+        s.addNote(1, Note.create("C4", 2) );
+        s.addNote(1, Note.create("D4", 2) );
+
+        s.addNote(0, Note.create("E4", 2));
+        s.addNote(0, Note.create("E4", 2));
+        s.addNote(0, Note.create("E4", 2));
+        s.addNote(0, Note.create("E4", 2));
+        s.addNote(0, Note.create("E4", 2));
+        s.addNote(2, Note.create("G3", 2));
+        s.addNote(3, Note.create("C3", 2));
+        s.addNote(2, Note.create("G3", 2));
+        s.addNote(3, Note.create("C3", 2));
+        s.addNote(2, Note.create("G3", 2));
+        s.addNote(3, Note.create("C3", 2));
+        s.addNote(2, Note.create("G3", 2));
+        s.addNote(3, Note.create("C3", 2));
+        s.addNote(2, Note.create("G3", 2));
+        s.addNote(3, Note.create("C3", 2));
+
+
+        ScoreViewer viewer = new ScoreViewer();
+        viewer.addScore(s);
+
+        viewer.show();
+
+
+//        Library lib = new Library();
+//        TuneBook book = new TuneBook(lib, "tunebook.txt", "Test Tunebook", true);
+//        TuneList list = new TuneList(lib, "Test Tunelist");
+//
+//        Tune tune = book.createNewTune();
+//        tune.setABCText(S);
+//
+//        Tune tune2 = book.createNewTune();
+//        tune.setABCText(SS);
+//
+//        list.addTune(tune);
+//
+//        ABCJ abcj = new ABCJ();
+//        abcj.initApplication();
+//        abcj.disableGUI();
+//
+//        System.err.println("x");
+//
+//        MainGUI gui = new MainPane(abcj);
+//        System.err.println("y");
+//
+//        gui.addTuneBook(book);
+//        gui.addTuneList(list);
+//        gui.refreshTuneList(list);
+//        gui.addNewTune(tune);
+//        gui.addNewTune(tune2);
+//        System.err.println("z");
+//
+//        abcj.refreshMenu();
+//        abcj.enableGUI();
+    }
+
+    private static final String S = "X:1\n" +
+            "T:Test Song\n" +
+            "C:AK\n" +
+            "M:4/4\n" +
+            "K:C\n" +
+            "\"C\" C,2 d''2 _E2 ^F2 | \"G7\" C2 D2 |]\n";
+
+
+    private static final String SS = "X:1\n" +
+            "T:Test Song 2\n" +
+            "C:AK\n" +
+            "M:4/4\n" +
+            "K:C\n" +
+            "\"C\" C,2 d''2 _E2 ^F2 | \"G7\" C2 D2 |]\n";
 }
