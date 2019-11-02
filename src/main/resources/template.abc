@@ -5,8 +5,8 @@ C:{{ composer }}
 M:{{ timesig }}
 L:1/8
 K:{{ key }}
-V:Tn octave=+1 clef=treble-8   name="Tn"  snm=""
-V:Ld octave=+1  clef=treble-8   name="Ld"  snm=""
+V:Tn middle=B, clef=treble-8   name="Tn"  snm=""
+V:Ld middle=B,  clef=treble-8   name="Ld"  snm=""
 V:Br            clef=bass       name="Br"  snm=""
 V:Bs            clef=bass       name="Bs"  snm=""
 %%score (Tn Ld) (Br Bs)
