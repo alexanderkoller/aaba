@@ -1,5 +1,6 @@
 package de.saar.coli.arranger;
 
+import de.saar.coli.arranger.abc.AbcParser;
 import org.junit.Test;
 
 import java.io.IOException;

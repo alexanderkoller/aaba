@@ -1,4 +1,9 @@
-package de.saar.coli.arranger;
+package de.saar.coli.arranger.abc;
+
+import de.saar.coli.arranger.Chord;
+import de.saar.coli.arranger.Key;
+import de.saar.coli.arranger.Note;
+import de.saar.coli.arranger.Score;
 
 import javax.annotation.processing.Filer;
 import java.io.*;

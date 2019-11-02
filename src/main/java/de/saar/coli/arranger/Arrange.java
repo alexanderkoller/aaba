@@ -2,13 +2,18 @@ package de.saar.coli.arranger;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import de.saar.coli.arranger.abc.AbcParser;
+import de.saar.coli.arranger.abc.AbcWriter;
 
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class Arrange {
+    private Config config;
+
     private static final VoicePart[] VOICE_PARTS = new VoicePart[]{
             new VoicePart("Tenor", Note.create("G3", 0), Note.create("B4", 0)),
             new VoicePart("Lead", Note.create("C3", 0), Note.create("G4", 0)),
@@ -18,25 +23,16 @@ public class Arrange {
 
     private static final int TENOR = 0, LEAD = 1, BARI = 2, BASS = 3;
 
+    public Arrange(Config config) {
+        this.config = config;
+    }
+
     public static void main(String[] args) throws IOException, AbcParser.AbcParsingException {
+        Config config = Config.read(new InputStreamReader(Arrange.class.getResourceAsStream("/config.yaml")));
         Score score = new AbcParser().read(new FileReader("down_our_way.abc"));
 
-        // print score
-        score.foreachNoteAndChord(LEAD, (note, chord) -> {
-            StringBuilder buf = new StringBuilder();
-
-            for (int chordNote : chord.getNotes()) {
-                buf.append(Note.getNoteName(chordNote));
-                buf.append(" ");
-            }
-
-//            System.out.printf("%s %s -> %s\n", note, chord, buf.toString());
-        });
-
-        Arrange arranger = new Arrange();
+        Arrange arranger = new Arrange(config);
         Score bestArrangedScore = arranger.arrange(score);
-
-//        System.out.println(bestArrangedScore);
 
         AbcWriter abcw = new AbcWriter();
         FileWriter fw = new FileWriter("arranged.abc");
@@ -46,16 +42,9 @@ public class Arrange {
     }
 
     private Score arrange(Score score) {
-        List<List<List<Note>>> possibleNotes = computePossibleNotes(score);
-//        for (List<List<Note>> notesAtTime : possibleNotes) {
-//            System.out.println();
-//            System.out.println("Tn: " + notesAtTime.get(TENOR));
-//            System.out.println("Ld: " + notesAtTime.get(LEAD));
-//            System.out.println("Br: " + notesAtTime.get(BARI));
-//            System.out.println("Bs: " + notesAtTime.get(BASS));
-//        }
-
         int n = score.countNotes(LEAD);
+
+        List<List<List<Note>>> possibleNotes = computePossibleNotes(score);
         assert n == possibleNotes.size();
 
         Map<Item, Integer> bestScores = new HashMap<>();
@@ -63,8 +52,6 @@ public class Arrange {
         int time = 0;
 
         for (int pos = 0; pos < n; pos++) {
-//            System.err.printf("Processing position %d ...\n", pos);
-
             List<List<Note>> notesHere = possibleNotes.get(pos);
             Chord chordHere = score.getChordAtTime(time);
 
@@ -147,9 +134,8 @@ public class Arrange {
 
     private Score extractBestScore(Item bestFinalItem, BackpointerColumn backpointers, Score originalScore) {
         List<Note[]> notes = new ArrayList<>();
-        Item item = bestFinalItem;
 
-//        System.err.printf("[%03d] %s\n", notes.size(), item);
+        Item item = bestFinalItem;
         notes.add(item.lastNotes);
 
         while (backpointers != null) {
@@ -161,7 +147,7 @@ public class Arrange {
                 break;
             } else {
                 item = bp.getPreviousItem();
-                System.err.printf("[%03d] %s\n", notes.size(), item);
+//                System.err.printf("[%03d] %s\n", notes.size(), item);
                 notes.add(item.lastNotes);
 
                 backpointers = backpointers.getPrevious();
@@ -172,7 +158,7 @@ public class Arrange {
 
         Score ret = new Score();
         ret.setTitle(originalScore.getTitle());
-        ret.setComposer("AK arranger");
+        ret.setComposer(config.getArranger());
         ret.setKey(originalScore.getKey());
         ret.setQuartersPerMeasure(originalScore.getQuartersPerMeasure());
         ret.setLyrics(originalScore.getLyrics());
@@ -197,7 +183,7 @@ public class Arrange {
         for (int part = 0; part < 4; part++) {
             if (part == TENOR || part == BARI) {
                 if (from[part].getAbsoluteDistance(to[part]) > 3) {
-                    score -= 20;
+                    score += config.getScores().getHarmonyJumps();
                 }
             }
         }
@@ -207,7 +193,7 @@ public class Arrange {
             for (int other = part + 1; other < 4; other++) {
                 if (from[part].getAbsoluteDistance(from[other]) == 12) {
                     if (to[part].getAbsoluteDistance(to[other]) == 12) {
-                        score -= 20;
+                        score += config.getScores().getParallelOctaves();
                     }
                 }
             }
@@ -227,7 +213,7 @@ public class Arrange {
 
         // Tn likes to be highest note
         if (tn.getAbsoluteNote() < ld.getAbsoluteNote() || tn.getAbsoluteNote() < br.getAbsoluteNote()) {
-            score -= 10;
+            score += config.getScores().getTenorCrossing();
         }
 
         // Bs really wants to be lowest note
@@ -239,14 +225,14 @@ public class Arrange {
         // disprefer unison
         Set<Integer> differentAbsoluteNotes = new HashSet<>(List.of(tn.getAbsoluteNote(), ld.getAbsoluteNote(), br.getAbsoluteNote(), bs.getAbsoluteNote()));
         if (differentAbsoluteNotes.size() < 4) {
-            score -= 50;
+            score += config.getScores().getUnisonNotes();
         }
 
         // disprefer very wide spread
         int highest = Collections.max(differentAbsoluteNotes);
         int lowest = Collections.min(differentAbsoluteNotes);
-        if (highest - lowest > 19) { // octave + third
-            score -= 20;
+        if (highest - lowest > 19) { // octave + fifth
+            score += config.getScores().getWideSpread();
         }
 
         return score;

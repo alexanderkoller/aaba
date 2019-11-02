@@ -1,12 +1,15 @@
-package de.saar.coli.arranger;
+package de.saar.coli.arranger.abc;
 
 import au.com.codeka.carrot.CarrotEngine;
 import au.com.codeka.carrot.CarrotException;
 import au.com.codeka.carrot.Configuration;
 import au.com.codeka.carrot.bindings.MapBindings;
-import au.com.codeka.carrot.resource.FileResourceLocator;
 import au.com.codeka.carrot.resource.MemoryResourceLocator;
 import au.com.codeka.carrot.resource.ResourceLocator;
+import de.saar.coli.arranger.Chord;
+import de.saar.coli.arranger.Key;
+import de.saar.coli.arranger.Note;
+import de.saar.coli.arranger.Score;
 
 import java.io.*;
 import java.util.HashMap;
@@ -14,44 +17,6 @@ import java.util.List;
 import java.util.Map;
 
 public class AbcWriter {
-    public static void main(String[] args) throws IOException {
-        Score s = new Score("Test Song", "AK", "C", 4);
-
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(1, Note.create("C4", 2));
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-
-        s.addNote(1, Note.create("D4", 2));
-        s.addNote(1, Note.create("E4", 2));
-        s.addNote(1, Note.create("F4", 2));
-        s.addNote(1, Note.create("C4", 2));
-        s.addNote(1, Note.create("D4", 2));
-
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-
-
-        PrintWriter w = new PrintWriter(new OutputStreamWriter(System.out));
-        AbcWriter abc = new AbcWriter();
-        abc.write(s, w);
-        w.println();
-        w.close();
-    }
-
     public void write(Score score, Writer writer) throws IllegalArgumentException, IOException {
         CarrotEngine engine = new CarrotEngine(new Configuration.Builder()
                 .setResourceLocator(makeResourceLocator())
@@ -115,15 +80,11 @@ public class AbcWriter {
             // note exists in key of current chord, use chord key's accidental
             // (only if chord is available in score)
             n = note.getNoteName(chordKey, true);
-
-
-
-
-            System.err.printf("%s in chord key %s -> spell as %s\n", Note.getNoteName(note.getRelativeNote()), chordKey, n);
+//            System.err.printf("%s in chord key %s -> spell as %s\n", Note.getNoteName(note.getRelativeNote()), chordKey, n);
         } else {
             // note exists in neither, use fallback tactics for key
             n = note.getNoteName(key);
-            System.err.printf("%s fallback spell as %s (chord key was %s)\n", Note.getNoteName(note.getRelativeNote()), n, chordKey);
+//            System.err.printf("%s fallback spell as %s (chord key was %s)\n", Note.getNoteName(note.getRelativeNote()), n, chordKey);
         }
 
         // convert standard spelling of accidentals to ABC notation
