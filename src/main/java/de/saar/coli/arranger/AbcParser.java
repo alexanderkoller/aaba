@@ -45,7 +45,7 @@ public class AbcParser {
                         break;
                     case "K":
                         score.setKey(value);
-                        key = Key.valueOf(value);
+                        key = Key.Lookup.lookup(value);
                         break;
                     case "M":
                         score.setQuartersPerMeasure(Integer.parseInt(value.substring(0, 1)));

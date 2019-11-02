@@ -23,7 +23,7 @@ public class TestScore {
     }
 
     @Test
-    public void testParser() throws IOException {
+    public void testParser() throws IOException, AbcParser.AbcParsingException {
         AbcParser p = new AbcParser();
         Score score = p.read(new StringReader(ABC));
 
