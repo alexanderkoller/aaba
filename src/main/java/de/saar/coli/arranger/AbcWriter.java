@@ -70,17 +70,17 @@ public class AbcWriter {
             int eightsInMeasure = 0;
 
             for( Note note : part ) {
-                buf.append(abcNote(note));
                 buf.append(" ");
+                buf.append(abcNote(note));
                 eightsInMeasure += note.getDuration();
 
-                if( eightsInMeasure >= 8 ) {
-                    buf.append("| ");
+                if( eightsInMeasure >= score.getQuartersPerMeasure()*2 ) {
+                    buf.append(" |");
                     eightsInMeasure = 0;
                 }
             }
 
-            buf.append("|]");
+            buf.append("]");
 
             bindings.put(Score.PART_NAMES[i], buf.toString());
         }
@@ -93,10 +93,18 @@ public class AbcWriter {
         }
     }
 
-    // TODO: accidentals, ^, = and _ are used (before a note) to notate respectively a sharp, natural or flat.
     private String abcNote(Note note) {
         String n = Note.getNoteName(note.getRelativeNote());
         StringBuilder buf = new StringBuilder();
+
+        if( n.length() == 2 ) {
+            // spell accidental for ABC
+            switch(n.charAt(1)) {
+                case 'b': n = "_" + n.substring(0,1); break;
+                case '#': n = "^" + n.substring(0,1); break;
+                // TODO naturals in keys that require them? spell as '='
+            }
+        }
 
         if( note.getOctave() >= 5 ) {
             buf.append(n.toLowerCase());

@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 
@@ -33,17 +34,20 @@ public class Arrange {
         });
 
         Arrange arranger = new Arrange();
-        arranger.arrange(score);
+        Score bestArrangedScore = arranger.arrange(score);
 
+        System.out.println(bestArrangedScore);
 
-
-
-
+        AbcWriter abcw = new AbcWriter();
+        FileWriter fw = new FileWriter("arranged.abc");
+        abcw.write(bestArrangedScore, fw);
+        fw.flush();
+        fw.close();
     }
 
-    private void arrange(Score score) {
+    private Score arrange(Score score) {
         List<List<List<Note>>> possibleNotes = computePossibleNotes(score);
-        for( List<List<Note>> notesAtTime : possibleNotes ) {
+        for (List<List<Note>> notesAtTime : possibleNotes) {
             System.out.println();
             System.out.println("Tn: " + notesAtTime.get(TENOR));
             System.out.println("Ld: " + notesAtTime.get(LEAD));
@@ -53,6 +57,302 @@ public class Arrange {
 
         int n = score.countNotes(LEAD);
         assert n == possibleNotes.size();
+
+        Map<Item, Integer> bestScores = new HashMap<>();
+        BackpointerColumn backpointers = new BackpointerColumn(null);
+        int time = 0;
+
+        for (int pos = 0; pos < n; pos++) {
+            System.err.printf("Processing position %d ...\n", pos);
+
+            List<List<Note>> notesHere = possibleNotes.get(pos);
+            Chord chordHere = score.getChordAtTime(time);
+
+            Map<Item, Integer> bestScoresNext = new HashMap<>();
+            BackpointerColumn backpointersNext = new BackpointerColumn(backpointers);
+
+            for (Note bs : notesHere.get(BASS)) {
+                if (chordHere.isAllowedBassNote(bs)) {
+                    for (Note ld : notesHere.get(LEAD)) {
+                        for (Note br : notesHere.get(BARI)) {
+                            for (Note tn : notesHere.get(TENOR)) {
+                                int itemScore = scoreLexicalChord(tn, ld, br, bs, chordHere);
+
+                                if (itemScore > Integer.MIN_VALUE) {
+                                    Note[] notes = new Note[]{tn, ld, br, bs};
+                                    Item it = new Item(notes);
+
+                                    if (pos == 0) {
+                                        // first timestep
+                                        backpointersNext.getBackpointers().put(it, null); // null backpointer = lexical cell
+                                        bestScoresNext.put(it, itemScore);
+                                    } else {
+                                        // later timesteps
+                                        for (Map.Entry<Item, Integer> oldEntry : bestScores.entrySet()) {
+                                            int transitionScore = scoreTransition(oldEntry.getKey().lastNotes, notes);
+                                            int totalScore = itemScore + transitionScore + oldEntry.getValue();
+
+                                            if (totalScore >= -20) {
+                                                Item newItem = new Item(notes);
+                                                Backpointer bp = new Backpointer(oldEntry.getKey(), totalScore);
+                                                backpointersNext.getBackpointers().put(newItem, bp);
+
+                                                Integer oldBestScore = bestScoresNext.get(newItem);
+                                                if (oldBestScore == null || oldBestScore < totalScore) {
+                                                    bestScoresNext.put(newItem, totalScore);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            time += score.getPart(LEAD).get(pos).getDuration();
+            System.err.printf("Bp after pos %d: %s\n", pos, backpointersNext);
+
+//            assert bestScoresNext.keySet().equals(backpointersNext.getBackpointers().keySet());
+
+            bestScores = bestScoresNext;
+            backpointers = backpointersNext;
+        }
+
+
+        // show goal items
+        List<Map.Entry<Item, Integer>> sortedEntries = new ArrayList<>(bestScores.entrySet());
+        Collections.sort(sortedEntries, Comparator.comparing(Map.Entry::getValue));
+
+        Score bestArrangedScore = extractBestScore(sortedEntries.get(sortedEntries.size() - 1).getKey(), backpointers, score);
+        return bestArrangedScore;
+    }
+
+    private static class BackpointerColumn {
+        private BackpointerColumn previous;
+        private ListMultimap<Item, Backpointer> backpointers;
+
+        public BackpointerColumn(BackpointerColumn previous) {
+            this.previous = previous;
+            backpointers = ArrayListMultimap.create();
+        }
+
+        public BackpointerColumn getPrevious() {
+            return previous;
+        }
+
+        public ListMultimap<Item, Backpointer> getBackpointers() {
+            return backpointers;
+        }
+    }
+
+    private Score extractBestScore(Item bestFinalItem, BackpointerColumn backpointers, Score originalScore) {
+        List<Note[]> notes = new ArrayList<>();
+        Item item = bestFinalItem;
+
+        System.err.printf("[%03d] %s\n", notes.size(), item);
+        notes.add(item.lastNotes);
+
+        while (backpointers != null) {
+            List<Backpointer> backpointersHere = backpointers.getBackpointers().get(item);
+            Collections.sort(backpointersHere, Comparator.comparing(Backpointer::getScore).reversed());
+            Backpointer bp = backpointersHere.get(0); // best backpointer
+
+            if (bp == null) {
+                break;
+            } else {
+                item = bp.getPreviousItem();
+                System.err.printf("[%03d] %s\n", notes.size(), item);
+                notes.add(item.lastNotes);
+
+                backpointers = backpointers.getPrevious();
+            }
+        }
+//
+//        do {
+//            List<Backpointer> backpointersHere = backpointers.getBackpointers().get(item);
+//            Collections.sort(backpointersHere, Comparator.comparing(Backpointer::getScore).reversed());
+////            System.err.printf("  bp for %s: %s\n", item, backpointersHere);
+////            System.err.printf("  items with backpointers: %s\n", backpointers.keySet());
+//            bp = backpointersHere.get(0); // best backpointer
+//            backpointers = backpointers.getPrevious();
+//
+//            if( backpointers == null ) {
+//                break;
+//            } else {
+//                item = bp.previousItem;
+//                System.err.printf("[%03d] %s\n", notes.size(), item);
+//                notes.add(item.lastNotes);
+//            }
+//        } while(true);
+
+        Collections.reverse(notes);
+
+        Score ret = new Score();
+        ret.setTitle(originalScore.getTitle());
+        ret.setComposer("AK arranger");
+        ret.setKey(originalScore.getKey());
+        ret.setQuartersPerMeasure(originalScore.getQuartersPerMeasure());
+
+        for (Note[] notesHere : notes) {
+            for (int part = 0; part < 4; part++) {
+                ret.addNote(part, notesHere[part]);
+            }
+        }
+
+        return ret;
+    }
+
+    private int scoreTransition(Note[] from, Note[] to) {
+        int score = 0;
+
+        // penalize wide jumps in Br and Tn
+        for (int part = 0; part < 4; part++) {
+            if (part == TENOR || part == BARI) {
+                if (from[part].getAbsoluteDistance(to[part]) > 3) {
+                    score -= 20;
+                }
+            }
+        }
+
+        // penalize parallel octaves
+        for (int part = 0; part < 4; part++) {
+            for (int other = part + 1; other < 4; other++) {
+                if (from[part].getAbsoluteDistance(from[other]) == 12) {
+                    if (to[part].getAbsoluteDistance(to[other]) == 12) {
+                        score -= 20;
+                    }
+                }
+            }
+        }
+
+        return score;
+    }
+
+    private int scoreLexicalChord(Note tn, Note ld, Note br, Note bs, Chord chord) {
+        // must use all chord notes
+        Set<Integer> differentRelativeNotes = new HashSet<>(List.of(tn.getRelativeNote(), ld.getRelativeNote(), br.getRelativeNote(), bs.getRelativeNote()));
+        if (differentRelativeNotes.size() < chord.getNotes().size()) {
+            return Integer.MIN_VALUE;
+        }
+
+        int score = 0;
+
+        // Tn likes to be highest note
+        if (tn.getAbsoluteNote() < ld.getAbsoluteNote() || tn.getAbsoluteNote() < br.getAbsoluteNote()) {
+            score -= 10;
+        }
+
+        // Bs really wants to be lowest note
+        if (bs.getAbsoluteNote() > br.getAbsoluteNote() || bs.getAbsoluteNote() > ld.getAbsoluteNote() || bs.getAbsoluteNote() > tn.getAbsoluteNote()) {
+//            score -= 100;
+            return Integer.MIN_VALUE;
+        }
+
+        // disprefer unison
+        Set<Integer> differentAbsoluteNotes = new HashSet<>(List.of(tn.getAbsoluteNote(), ld.getAbsoluteNote(), br.getAbsoluteNote(), bs.getAbsoluteNote()));
+        if (differentAbsoluteNotes.size() < chord.getNotes().size()) {
+            score -= 30;
+        }
+
+        // disprefer very wide spread
+        int highest = Collections.max(differentAbsoluteNotes);
+        int lowest = Collections.min(differentAbsoluteNotes);
+        if (highest - lowest > 16) { // octave + third
+            score -= 20;
+        }
+
+        return score;
+    }
+
+    // possibleNotes[time][part] = list(possible notes for that part at that time)
+    private List<List<List<Note>>> computePossibleNotes(Score score) {
+        List<List<List<Note>>> ret = new ArrayList<>();
+
+        score.foreachNoteAndChord(LEAD, (note, chord) -> {
+            Set<Integer> chordNotes = chord.getNotes();
+            List<List<Note>> notesAtTime = new ArrayList<>();
+            ret.add(notesAtTime);
+
+            for (int part = 0; part < 4; part++) {
+                if (part == LEAD) {
+                    List<Note> x = List.of(note);
+                    notesAtTime.add(x);
+                } else {
+                    notesAtTime.add(VOICE_PARTS[part].getNotesInRange(chordNotes, note.getDuration()));
+                }
+            }
+        });
+
+        return ret;
+    }
+
+    private static class Backpointer {
+        private int score;
+        private Item previousItem;
+
+        public Backpointer(Item previousItem, int score) {
+            this.score = score;
+            this.previousItem = previousItem;
+        }
+
+        public int getScore() {
+            return score;
+        }
+
+        public Item getPreviousItem() {
+            return previousItem;
+        }
+
+        @Override
+        public String toString() {
+            return "Backpointer{" +
+                    "score=" + score +
+                    ", previousItem=" + previousItem +
+                    '}';
+        }
+    }
+
+    private static class Item {
+        private Note[] lastNotes;
+
+        public Item(Note[] lastNotes) {
+            this.lastNotes = lastNotes;
+        }
+
+        public Note[] getLastNotes() {
+            return lastNotes;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("[%s %s %s %s]",
+                    lastNotes[TENOR], lastNotes[LEAD], lastNotes[BARI], lastNotes[BASS]);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Item item = (Item) o;
+
+            return lastNotes[0].getAbsoluteNote() == item.lastNotes[0].getAbsoluteNote()
+                    && lastNotes[1].getAbsoluteNote() == item.lastNotes[1].getAbsoluteNote()
+                    && lastNotes[2].getAbsoluteNote() == item.lastNotes[2].getAbsoluteNote()
+                    && lastNotes[3].getAbsoluteNote() == item.lastNotes[3].getAbsoluteNote();
+        }
+
+        @Override
+        public int hashCode() {
+            int[] x = new int[]{lastNotes[0].getAbsoluteNote(), lastNotes[1].getAbsoluteNote(), lastNotes[2].getAbsoluteNote(), lastNotes[3].getAbsoluteNote()};
+            return Arrays.hashCode(x);
+        }
+    }
+}
+
+/*
+
 
         Map<Item,Integer>[][] bestScores = new Map[n+1][n+1];
         ListMultimap<Item,Backpointer>[][] chart = new ListMultimap[n+1][n+1];
@@ -137,154 +437,4 @@ public class Arrange {
         for( Map.Entry<Item,Integer> goalEntry : bestScores[0][n].entrySet() ) {
             System.out.printf("\nGOAL ITEM: %s, best score %d\n", goalEntry.getKey(), goalEntry.getValue());
         }
-    }
-
-    private int scoreTransition(Note[] from, Note[] to) {
-        int score = 0;
-
-        // penalize wide jumps in Br and Tn
-        for( int part = 0; part < 4; part++ ) {
-            if( part == TENOR || part == BARI ) {
-                if( from[part].getAbsoluteDistance(to[part]) > 3 ) {
-                    score -= 20;
-                }
-            }
-        }
-
-        // penalize parallel octaves
-        for( int part = 0; part < 4; part++ ) {
-            for( int other = part+1; other < 4; other++ ) {
-                if( from[part].getAbsoluteDistance(from[other]) == 12 ) {
-                    if( to[part].getAbsoluteDistance(to[other]) == 12 ) {
-                        score -= 20;
-                    }
-                }
-            }
-        }
-
-        return score;
-    }
-
-    private int scoreLexicalChord(Note tn, Note ld, Note br, Note bs, Chord chord) {
-        // must use all chord notes
-        Set<Integer> differentRelativeNotes = new HashSet<>(List.of(tn.getRelativeNote(), ld.getRelativeNote(), br.getRelativeNote(), bs.getRelativeNote()));
-        if(differentRelativeNotes.size() < chord.getNotes().size()) {
-            return Integer.MIN_VALUE;
-        }
-
-        int score = 0;
-
-        // Tn likes to be highest note
-        if( tn.getAbsoluteNote() < ld.getAbsoluteNote() || tn.getAbsoluteNote() < br.getAbsoluteNote() ) {
-            score -= 10;
-        }
-
-        // Bs really wants to be lowest note
-        if( bs.getAbsoluteNote() > br.getAbsoluteNote() || bs.getAbsoluteNote() > ld.getAbsoluteNote() || bs.getAbsoluteNote() > tn.getAbsoluteNote()) {
-//            score -= 100;
-            return Integer.MIN_VALUE;
-        }
-
-        // disprefer unison
-        Set<Integer> differentAbsoluteNotes = new HashSet<>(List.of(tn.getAbsoluteNote(), ld.getAbsoluteNote(), br.getAbsoluteNote(), bs.getAbsoluteNote()));
-        if( differentAbsoluteNotes.size() < chord.getNotes().size() ) {
-            score -= 30;
-        }
-
-        // disprefer very wide spread
-        int highest = Collections.max(differentAbsoluteNotes);
-        int lowest = Collections.min(differentAbsoluteNotes);
-        if( highest - lowest > 16 ) { // octave + third
-            score -= 20;
-        }
-
-        return score;
-    }
-
-    // possibleNotes[time][part] = list(possible notes for that part at that time)
-    private List<List<List<Note>>> computePossibleNotes(Score score) {
-        List<List<List<Note>>> ret = new ArrayList<>();
-
-        score.foreachNoteAndChord(LEAD, (note, chord) -> {
-            Set<Integer> chordNotes = chord.getNotes();
-            List<List<Note>> notesAtTime = new ArrayList<>();
-            ret.add(notesAtTime);
-
-            for( int part = 0; part < 4; part++ ) {
-                if( part == LEAD ) {
-                    List<Note> x = List.of(note);
-                    notesAtTime.add(x);
-                } else {
-                    notesAtTime.add(VOICE_PARTS[part].getNotesInRange(chordNotes, note.getDuration()));
-                }
-            }
-        });
-
-        return ret;
-    }
-
-    private static class Backpointer {
-        private int score;
-        private Item left, right;
-
-        public Backpointer(Item left, Item right, int score) {
-            this.score = score;
-            this.left = left;
-            this.right = right;
-        }
-
-        public int getScore() {
-            return score;
-        }
-
-        public Item getLeft() {
-            return left;
-        }
-
-        public Item getRight() {
-            return right;
-        }
-    }
-
-    private static class Item {
-        private Note[] firstNotes;
-        private Note[] lastNotes;
-//        private int bestScore;
-
-        public Item(Note[] firstNotes, Note[] lastNotes) {
-            this.firstNotes = firstNotes;
-            this.lastNotes = lastNotes;
-        }
-
-        public Note[] getFirstNotes() {
-            return firstNotes;
-        }
-
-        public Note[] getLastNotes() {
-            return lastNotes;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("[%s/%s/%s/%s ... %s/%s/%s/%s]",
-                    firstNotes[TENOR], firstNotes[LEAD], firstNotes[BARI], firstNotes[BASS],
-                    lastNotes[TENOR], lastNotes[LEAD], lastNotes[BARI], lastNotes[BASS]);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            Item item = (Item) o;
-            return Arrays.equals(firstNotes, item.firstNotes) &&
-                    Arrays.equals(lastNotes, item.lastNotes);
-        }
-
-        @Override
-        public int hashCode() {
-            int result = Arrays.hashCode(firstNotes);
-            result = 31 * result + Arrays.hashCode(lastNotes);
-            return result;
-        }
-    }
-}
+ */
