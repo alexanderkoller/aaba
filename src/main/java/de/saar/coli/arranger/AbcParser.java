@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
  * - every note must have an explicit duration
  * - must have space between adjacent notes
  * - no rests
+ * - K: field must come before all notes
  */
 public class AbcParser {
     private static Pattern LINE_PATTERN = Pattern.compile("\\s*(\\S+):\\s*(.+)");
@@ -24,6 +25,7 @@ public class AbcParser {
         Score score = new Score("", "", "", 4);
         String line;
         int timeInEighths = 0;
+        Key key = Key.C;
 
         while ((line = r.readLine()) != null) {
             Matcher m = LINE_PATTERN.matcher(line);
@@ -31,10 +33,10 @@ public class AbcParser {
             if( line.startsWith("%")) {
                 // skip
             } else if (m.matches()) {
-                String key = m.group(1);
+                String configKey = m.group(1);
                 String value = m.group(2).trim();
 
-                switch (key) {
+                switch (configKey) {
                     case "T":
                         score.setTitle(value);
                         break;
@@ -43,6 +45,7 @@ public class AbcParser {
                         break;
                     case "K":
                         score.setKey(value);
+                        key = Key.valueOf(value);
                         break;
                     case "M":
                         score.setQuartersPerMeasure(Integer.parseInt(value.substring(0, 1)));
@@ -71,7 +74,7 @@ public class AbcParser {
                         score.addChord(timeInEighths, chord);
                     } else {
                         // note
-                        Note note = parseAbcNote(pn);
+                        Note note = parseAbcNote(pn, key);
                         leadPart.add(note);
                         timeInEighths += note.getDuration();
                     }
@@ -89,24 +92,30 @@ public class AbcParser {
     }
 
     // TODO - add accidentals as defined by key
-    private Note parseAbcNote(String note) throws AbcParsingException {
+    private Note parseAbcNote(String note, Key key) throws AbcParsingException {
         int pos = 0;
         Character accidental = null;
-        int absoluteOffset = 0;
+        int accidentalOffset = 0;
 
-        if (note.charAt(pos) == '^') {
-            absoluteOffset = +1;
-            pos++;
-        } else if (note.charAt(pos) == '_') {
-            absoluteOffset = -1;
-            pos++;
-        } else if( note.charAt(pos) == '=') {
-            absoluteOffset = 0;
-            pos++;
+        // explicit accidentals
+        if (note.charAt(pos) == '^' || note.charAt(pos) == '_' || note.charAt(pos) == '=') {
+            accidental = note.charAt(pos++);
         }
 
+        // interpret note in current key
         String relativeNote = Character.toString(note.charAt(pos++));
+        accidentalOffset = key.getAccidentalForNote(relativeNote);
 
+        // explicit accidentals overwrite the accidental offset
+        if( accidental != null ) {
+            switch(accidental) {
+                case '^': accidentalOffset = +1; break;
+                case '_': accidentalOffset = -1; break;
+                case '=': accidentalOffset = 0; break;
+            }
+        }
+
+        // move note to correct octave
         int octave = 0;
         if (Character.isUpperCase(relativeNote.charAt(0))) {
             octave = 4;
@@ -122,8 +131,8 @@ public class AbcParser {
             }
         }
 
+        // parse duration
         int duration;
-
         try {
             duration = Integer.parseInt(note.substring(pos, pos + 1));
         } catch(NumberFormatException e) {
@@ -131,7 +140,7 @@ public class AbcParser {
         }
 
         Note ret = Note.create(relativeNote.toUpperCase(), octave, duration);
-        return ret.add(absoluteOffset);
+        return ret.add(accidentalOffset);
     }
 
     public static class AbcParsingException extends Exception {
