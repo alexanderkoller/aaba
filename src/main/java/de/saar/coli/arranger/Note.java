@@ -38,6 +38,14 @@ public class Note {
         }
     }
 
+    public int getAbsoluteNote() {
+        return midiNumber;
+    }
+
+    public int getAbsoluteDistance(Note other) {
+        return Math.abs(midiNumber - other.midiNumber);
+    }
+
     public Note sharp(Note base) {
         return Note.create(base.midiNumber+1, base.duration);
     }

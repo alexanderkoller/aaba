@@ -10,6 +10,7 @@ import abcj.ui.MainPane;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 public class Score {
     private List<Note>[] parts = new List[4]; // 0 = Tn, 1 = Ld, 2 = Br, 3 = Bs
@@ -19,6 +20,10 @@ public class Score {
     private String composer;
     private int quartersPerMeasure;
     private List<Pair<Integer,Chord>> chords = new ArrayList<>();
+
+    public Score() {
+        this("", "", "", 4);
+    }
 
     public Score(String title, String composer, String key, int quartersPerMeasure) {
         this.title = title;
@@ -86,6 +91,20 @@ public class Score {
         return null;
     }
 
+    public void foreachNoteAndChord(int part, BiConsumer<Note,Chord> fn) {
+        int time = 0;
+
+        for (Note note : getPart(part)) {
+            Chord chord = getChordAtTime(time);
+            fn.accept(note, chord);
+            time += note.getDuration();
+        }
+    }
+
+    public int countNotes(int part) {
+        return getPart(part).size();
+    }
+
     @Override
     public String toString() {
         StringBuilder buf = new StringBuilder();
@@ -102,88 +121,4 @@ public class Score {
 
         return buf.toString();
     }
-
-    public static void main(String[] args) {
-        Score s = new Score("Test Song", "AK", "C", 4);
-
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(1, Note.create("C4", 2) );
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-
-        s.addNote(1, Note.create("D4", 2) );
-        s.addNote(1, Note.create("E4", 2) );
-        s.addNote(1, Note.create("F4", 2) );
-        s.addNote(1, Note.create("C4", 2) );
-        s.addNote(1, Note.create("D4", 2) );
-
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(0, Note.create("E4", 2));
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-        s.addNote(2, Note.create("G3", 2));
-        s.addNote(3, Note.create("C3", 2));
-
-
-        ScoreViewer viewer = new ScoreViewer();
-        viewer.addScore(s);
-
-        viewer.show();
-
-
-//        Library lib = new Library();
-//        TuneBook book = new TuneBook(lib, "tunebook.txt", "Test Tunebook", true);
-//        TuneList list = new TuneList(lib, "Test Tunelist");
-//
-//        Tune tune = book.createNewTune();
-//        tune.setABCText(S);
-//
-//        Tune tune2 = book.createNewTune();
-//        tune.setABCText(SS);
-//
-//        list.addTune(tune);
-//
-//        ABCJ abcj = new ABCJ();
-//        abcj.initApplication();
-//        abcj.disableGUI();
-//
-//        System.err.println("x");
-//
-//        MainGUI gui = new MainPane(abcj);
-//        System.err.println("y");
-//
-//        gui.addTuneBook(book);
-//        gui.addTuneList(list);
-//        gui.refreshTuneList(list);
-//        gui.addNewTune(tune);
-//        gui.addNewTune(tune2);
-//        System.err.println("z");
-//
-//        abcj.refreshMenu();
-//        abcj.enableGUI();
-    }
-
-    private static final String S = "X:1\n" +
-            "T:Test Song\n" +
-            "C:AK\n" +
-            "M:4/4\n" +
-            "K:C\n" +
-            "\"C\" C,2 d''2 _E2 ^F2 | \"G7\" C2 D2 |]\n";
-
-
-    private static final String SS = "X:1\n" +
-            "T:Test Song 2\n" +
-            "C:AK\n" +
-            "M:4/4\n" +
-            "K:C\n" +
-            "\"C\" C,2 d''2 _E2 ^F2 | \"G7\" C2 D2 |]\n";
 }

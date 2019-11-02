@@ -13,6 +13,12 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Displays a score using ABCJ. Works with basic functionality for now,
+ * but because ABCJ only supports ABC 1.6, multiple voices are not
+ * displayed correctly.
+ *
+ */
 public class ScoreViewer {
     private List<Tune> abcs = new ArrayList<>();
     private TuneBook book;

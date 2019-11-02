@@ -1,0 +1,15 @@
+%abc-2.1
+X:1
+T:Down our way
+C:Stedman and Hughes
+M:3/4
+L:1/8
+K:Bb
+V:Ld middle=B,  clef=treble-8   name="Ld"  snm=""
+%
+"Bb" D6 | "D7" A,6 | "G7" G,6 | G,4 F,2 | "C7" G,6 | "C9" D6 | "C7" C6 | C4 G,2 | 
+w: Down our way _ both night and day _ you
+"F7" A,2 C2 A,2 | "C7" G,2 "F7" F,2 "C7" G,2 | "F7" A,2 C2 A,2 | "F9" G,4 "F7" F,2 |
+w: know ev-'ry-bo-dy and they all know you, and
+"Bb" B,2 "Bbadd9" C2 "Bb" D2 | "C7" C2 B,2 G,2 | "F7" A,2 "C7" B,2 "E7" =B,2 | "F7" C6 |]
+w: e-ven po-lice-men say "How do you do?"

@@ -2,6 +2,7 @@ package de.saar.coli.arranger;
 
 import javax.annotation.processing.Filer;
 import java.io.*;
+import java.text.ParseException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,10 +19,11 @@ import java.util.regex.Pattern;
 public class AbcParser {
     private static Pattern LINE_PATTERN = Pattern.compile("\\s*(\\S+):\\s*(.+)");
 
-    public Score read(Reader abcReader) throws IOException {
+    public Score read(Reader abcReader) throws IOException, AbcParsingException {
         BufferedReader r = new BufferedReader(abcReader);
         Score score = new Score("", "", "", 4);
         String line;
+        int timeInEighths = 0;
 
         while ((line = r.readLine()) != null) {
             Matcher m = LINE_PATTERN.matcher(line);
@@ -47,7 +49,6 @@ public class AbcParser {
                         break;
                 }
             } else {
-                int timeInEighths = 0;
                 List<Note> leadPart = score.getPart(1);
                 String[] potentialNotes = line.split("\\s+");
 
@@ -56,7 +57,11 @@ public class AbcParser {
                         // skip barlines
                     } else if( pn.startsWith("\"")) {
                         // chord
-                        score.addChord(timeInEighths, parseAbcChord(pn));
+                        Chord chord = parseAbcChord(pn);
+                        if( chord == null ) {
+                            throw new AbcParsingException("Could not parse chord: " + pn);
+                        }
+                        score.addChord(timeInEighths, chord);
                     } else {
                         // note
                         Note note = parseAbcNote(pn);
@@ -75,8 +80,10 @@ public class AbcParser {
         return Chord.lookup(chord);
     }
 
-    private Note parseAbcNote(String note) {
+    // TODO - add accidentals as defined by key
+    private Note parseAbcNote(String note) throws AbcParsingException {
         int pos = 0;
+        Character accidental = null;
         int absoluteOffset = 0;
 
         if (note.charAt(pos) == '^') {
@@ -84,6 +91,9 @@ public class AbcParser {
             pos++;
         } else if (note.charAt(pos) == '_') {
             absoluteOffset = -1;
+            pos++;
+        } else if( note.charAt(pos) == '=') {
+            absoluteOffset = 0;
             pos++;
         }
 
@@ -104,9 +114,36 @@ public class AbcParser {
             }
         }
 
-        int duration = Integer.parseInt(note.substring(pos, pos + 1));
+        int duration;
+
+        try {
+            duration = Integer.parseInt(note.substring(pos, pos + 1));
+        } catch(NumberFormatException e) {
+            throw new AbcParsingException("Could not parse ABC note: " + note, e);
+        }
 
         Note ret = Note.create(relativeNote.toUpperCase(), octave, duration);
         return ret.add(absoluteOffset);
+    }
+
+    public static class AbcParsingException extends Exception {
+        public AbcParsingException() {
+        }
+
+        public AbcParsingException(String message) {
+            super(message);
+        }
+
+        public AbcParsingException(String message, Throwable cause) {
+            super(message, cause);
+        }
+
+        public AbcParsingException(Throwable cause) {
+            super(cause);
+        }
+
+        public AbcParsingException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+            super(message, cause, enableSuppression, writableStackTrace);
+        }
     }
 }
