@@ -1,5 +1,7 @@
 package de.saar.coli.arranger;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import de.saar.coli.arranger.abc.AbcParser;
@@ -29,13 +31,25 @@ public class Arrange {
 
     public static void main(String[] args) throws IOException, AbcParser.AbcParsingException {
         Config config = Config.read(new InputStreamReader(Arrange.class.getResourceAsStream("/config.yaml")));
-        Score score = new AbcParser().read(new FileReader("down_our_way.abc"));
+        Args arguments = new Args();
+        JCommander jc = JCommander.newBuilder().addObject(arguments).build();
+        jc.parse(args);
+
+        if(arguments.help) {
+            jc.usage();
+            System.exit(0);
+        }
+
+        System.out.printf("Reading melody and chords from: %s\n", arguments.inputFilename);
+        System.out.printf("Writing arrangement to: %s\n\n", arguments.outputFilename);
+
+        Score score = new AbcParser().read(new FileReader(arguments.inputFilename));
 
         Arrange arranger = new Arrange(config);
         Score bestArrangedScore = arranger.arrange(score);
 
         AbcWriter abcw = new AbcWriter();
-        FileWriter fw = new FileWriter("arranged.abc");
+        FileWriter fw = new FileWriter(arguments.outputFilename);
         abcw.write(bestArrangedScore, fw);
         fw.flush();
         fw.close();
@@ -108,7 +122,7 @@ public class Arrange {
         List<Map.Entry<Item, Integer>> sortedEntries = new ArrayList<>(bestScores.entrySet());
         Collections.sort(sortedEntries, Comparator.comparing(Map.Entry::getValue));
         Map.Entry<Item, Integer> bestGoalItem = sortedEntries.get(sortedEntries.size() - 1);
-        System.out.printf("Best arrangement has score %d\n", bestGoalItem.getValue());
+        System.out.printf("Best arrangement has score %d.\n", bestGoalItem.getValue());
 
         Score bestArrangedScore = extractBestScore(bestGoalItem.getKey(), backpointers, score);
         return bestArrangedScore;
@@ -320,5 +334,17 @@ public class Arrange {
             int[] x = new int[]{lastNotes[0].getAbsoluteNote(), lastNotes[1].getAbsoluteNote(), lastNotes[2].getAbsoluteNote(), lastNotes[3].getAbsoluteNote()};
             return Arrays.hashCode(x);
         }
+    }
+
+    public static class Args {
+        @Parameter(description = "Name of the input file (*.abc).", required = true)
+        private String inputFilename = null;
+
+        @Parameter(names = {"--output", "-o"}, description="Name of the output file (*.abc).")
+        private String outputFilename = "arranged.abc";
+
+        @Parameter(names = "--help", description="Display usage instructions.", help = true)
+        private boolean help;
+
     }
 }
