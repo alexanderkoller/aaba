@@ -47,6 +47,13 @@ public class AbcParser {
                     case "M":
                         score.setQuartersPerMeasure(Integer.parseInt(value.substring(0, 1)));
                         break;
+
+                    case "w":
+                        String[] words = value.split("\\s+");
+                        for( String word : words ) {
+                            score.addWord(word);
+                        }
+                        break;
                 }
             } else {
                 List<Note> leadPart = score.getPart(1);
@@ -72,6 +79,7 @@ public class AbcParser {
             }
         }
 
+        System.err.println("words: " + score.getLyrics());
         return score;
     }
 

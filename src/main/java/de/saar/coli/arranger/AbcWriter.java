@@ -63,6 +63,7 @@ public class AbcWriter {
         bindings.put("composer", score.getComposer());
         bindings.put("key", score.getKey());
         bindings.put("timesig", Integer.toString(score.getQuartersPerMeasure()) + "/4");
+        bindings.put("lyrics", String.join(" ", score.getLyrics()));
 
         for( int i = 0; i < 4; i++ ) {
             List<Note> part = score.getPart(i);

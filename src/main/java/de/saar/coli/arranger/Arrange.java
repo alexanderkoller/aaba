@@ -169,23 +169,6 @@ public class Arrange {
                 backpointers = backpointers.getPrevious();
             }
         }
-//
-//        do {
-//            List<Backpointer> backpointersHere = backpointers.getBackpointers().get(item);
-//            Collections.sort(backpointersHere, Comparator.comparing(Backpointer::getScore).reversed());
-////            System.err.printf("  bp for %s: %s\n", item, backpointersHere);
-////            System.err.printf("  items with backpointers: %s\n", backpointers.keySet());
-//            bp = backpointersHere.get(0); // best backpointer
-//            backpointers = backpointers.getPrevious();
-//
-//            if( backpointers == null ) {
-//                break;
-//            } else {
-//                item = bp.previousItem;
-//                System.err.printf("[%03d] %s\n", notes.size(), item);
-//                notes.add(item.lastNotes);
-//            }
-//        } while(true);
 
         Collections.reverse(notes);
 
@@ -194,6 +177,7 @@ public class Arrange {
         ret.setComposer("AK arranger");
         ret.setKey(originalScore.getKey());
         ret.setQuartersPerMeasure(originalScore.getQuartersPerMeasure());
+        ret.setLyrics(originalScore.getLyrics());
 
         for (Note[] notesHere : notes) {
             for (int part = 0; part < 4; part++) {
@@ -259,7 +243,7 @@ public class Arrange {
         // disprefer very wide spread
         int highest = Collections.max(differentAbsoluteNotes);
         int lowest = Collections.min(differentAbsoluteNotes);
-        if (highest - lowest > 16) { // octave + third
+        if (highest - lowest > 19) { // octave + third
             score -= 20;
         }
 

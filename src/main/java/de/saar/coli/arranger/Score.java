@@ -20,6 +20,7 @@ public class Score {
     private String composer;
     private int quartersPerMeasure;
     private List<Pair<Integer,Chord>> chords = new ArrayList<>();
+    private List<String> lyrics = new ArrayList<>();
 
     public Score() {
         this("", "", "", 4);
@@ -78,6 +79,18 @@ public class Score {
 
     public void addChord(int startTime, Chord chord) {
         chords.add(new Pair<>(startTime, chord));
+    }
+
+    public void addWord(String word) {
+        lyrics.add(word);
+    }
+
+    public List<String> getLyrics() {
+        return lyrics;
+    }
+
+    public void setLyrics(List<String> words) {
+        lyrics = words;
     }
 
     public Chord getChordAtTime(int time) {
