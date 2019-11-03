@@ -13,32 +13,62 @@ public class Chord {
     private static final ChordType[] SUFFIX_CHECKING_ORDER = new ChordType[] { ChordType.DIMINISHED, ChordType.HALF_DIMINISHED, ChordType.MINOR_SEVENTH, ChordType.MINOR_SIXTH, ChordType.MAJOR_SEVENTH, ChordType.ADDNINE, ChordType.SEVEN_NINE, ChordType.SIXTH, ChordType.MINOR, ChordType.SEVENTH, ChordType.MAJOR };
 
     /**
-     * A chord type, such as "major" or "minor sixth". The following chord types are currently implemented:
-     * <ul>
-     *     <li>major triad (empty name suffix, so "C" = C-E-G is a major triad) </li>
-     *     <li>major sixth (name suffix "6", so "C6" = C-E-G-A is a major sixth chord)</li>
-     *     <li>dominant seventh (name suffix "7", so "C7" = C-E-G-Bb)</li>
-     *     <li>add-nine (name suffix "add9", so "Cadd9" = C-E-G-D)</li>
-     *     <li>dominant ninth without root note (name suffix "9", so "C9" = E-G-Bb-D)</li>
-     *     <li>major seventh (name suffix "mj7", so "Cmj7" = C-E-G-B)</li>
-     *     <li>minor triad (name suffix "m", so "Am" = A-C-E)</li>
-     *     <li>minor sixth (name suffix "m6", so "Am6" = A-C-E-F#)</li>
-     *     <li>minor seventh (name suffix "m7", so "Am7" = A-C-E-G)</li>
-     *     <li>half-diminished (name suffix "x7", so "Ax7" = A-C-Eb-G)</li>
-     *     <li>full-diminished (name suffix "07", so "A07" = A-C-Eb-Gb)</li>
-     * </ul>
+     * A chord type, such as "major" or "minor sixth". The implemented chord times are listed below.
      */
     public static enum ChordType {
+        /**
+         * major triad (empty name suffix, so "C" = C-E-G is a major triad)
+         */
         MAJOR("", "", List.of(0,7), 0, 4, 7),
+
+        /**
+         * major sixth (name suffix "6", so "C6" = C-E-G-A is a major sixth chord)
+         */
         SIXTH("6", "", List.of(0,7), 0, 4, 7, 9),
+
+        /**
+         * dominant seventh (name suffix "7", so "C7" = C-E-G-Bb)
+         */
         SEVENTH("7", "", List.of(0,7), 0, 4, 7, 10),
+
+        /**
+         * add-nine (name suffix "add9", so "Cadd9" = C-E-G-D)
+         */
         ADDNINE("add9", "", List.of(0,7), 0, 4, 7, 2),
+
+        /**
+         * dominant ninth without root note (name suffix "9", so "C9" = E-G-Bb-D)
+         */
         SEVEN_NINE("9", "", List.of(0,7), 4, 7, 10, 2),
+
+        /**
+         * major seventh (name suffix "mj7", so "Cmj7" = C-E-G-B)
+         */
         MAJOR_SEVENTH("mj7", "", List.of(0,7), 0, 4, 7, 11),
+
+        /**
+         * minor triad (name suffix "m", so "Am" = A-C-E)
+         */
         MINOR("m", "m", List.of(0, 3, 7), 0, 3, 7),
+
+        /**
+         * minor sixth (name suffix "m6", so "Am6" = A-C-E-F#)
+         */
         MINOR_SIXTH("m6", "m", List.of(0,3,7), 0, 3, 7, 9),
+
+        /**
+         * minor seventh (name suffix "m7", so "Am7" = A-C-E-G)
+         */
         MINOR_SEVENTH("m7", "m", List.of(0,7), 0, 3, 7, 10),
+
+        /**
+         * half-diminished (name suffix "x7", so "Ax7" = A-C-Eb-G)
+         */
         HALF_DIMINISHED("x7", "m", List.of(0), 0, 3, 6, 10),
+
+        /**
+         * full-diminished (name suffix "07", so "A07" = A-C-Eb-Gb)
+         */
         DIMINISHED("07", "", List.of(0, 3, 6, 9), 0, 3, 6, 9)
         ;
 
