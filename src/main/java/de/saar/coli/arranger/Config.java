@@ -5,6 +5,10 @@ import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.Reader;
 
+/**
+ * A configuration file for the automatic arranger.
+ *
+ */
 public class Config {
     private String arranger;
     private Scores scores;

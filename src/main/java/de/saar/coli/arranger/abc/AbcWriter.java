@@ -6,17 +6,26 @@ import au.com.codeka.carrot.Configuration;
 import au.com.codeka.carrot.bindings.MapBindings;
 import au.com.codeka.carrot.resource.MemoryResourceLocator;
 import au.com.codeka.carrot.resource.ResourceLocator;
-import de.saar.coli.arranger.Chord;
-import de.saar.coli.arranger.Key;
-import de.saar.coli.arranger.Note;
-import de.saar.coli.arranger.Score;
+import de.saar.coli.arranger.*;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A class for writing a score in ABC notation.
+ *
+ */
 public class AbcWriter {
+    /**
+     * Writes the score to the given writer in ABC notation.
+     *
+     * @param score
+     * @param writer
+     * @throws IllegalArgumentException - if something went wrong in filling out the ABC template
+     * @throws IOException - if an I/O error occurred
+     */
     public void write(Score score, Writer writer) throws IllegalArgumentException, IOException {
         CarrotEngine engine = new CarrotEngine(new Configuration.Builder()
                 .setResourceLocator(makeResourceLocator())
@@ -54,7 +63,7 @@ public class AbcWriter {
 
             buf.append("]");
 
-            bindings.put(Score.PART_NAMES[i], buf.toString());
+            bindings.put(VoicePart.PART_NAMES[i], buf.toString());
         }
 
         try {
@@ -71,12 +80,12 @@ public class AbcWriter {
         Key chordKey = currentChord == null ? null : currentChord.getKey();
 
         // get note name with accidentals, in standard spelling
-        if (key.notesInKey.contains(note.getRelativeNote())) {
+        if (key.getNotesInKey().contains(note.getRelativeNote())) {
             // note exists in key, use spelling from key;
             // in ABC notation, this means that note is spelled unmodified
             int baseNote = key.getBaseNote(note.getRelativeNote());
             n = Note.getNoteName(baseNote);
-        } else if (chordKey != null && chordKey.notesInKey.contains(note.getRelativeNote())) {
+        } else if (chordKey != null && chordKey.getNotesInKey().contains(note.getRelativeNote())) {
             // note exists in key of current chord, use chord key's accidental
             // (only if chord is available in score)
             n = note.getNoteName(chordKey, true);

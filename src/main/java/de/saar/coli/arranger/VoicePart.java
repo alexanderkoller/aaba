@@ -16,6 +16,7 @@ public class VoicePart {
     public static final int LEAD = 1;
     public static final int BARI = 2;
     public static final int BASS = 3;
+    public static String[] PART_NAMES = new String[] { "Tn", "Ld", "Br", "Bs" };
 
     private String name;
     private Note lowLimit;

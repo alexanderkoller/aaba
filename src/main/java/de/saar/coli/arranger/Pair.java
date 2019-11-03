@@ -1,5 +1,11 @@
 package de.saar.coli.arranger;
 
+/**
+ * An immutable pair of values.
+ *
+ * @param <E>
+ * @param <F>
+ */
 public class Pair<E,F> {
     private E left;
     private F right;

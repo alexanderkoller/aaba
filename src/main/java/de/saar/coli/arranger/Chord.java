@@ -2,11 +2,32 @@ package de.saar.coli.arranger;
 
 import java.util.*;
 
+/**
+ * A chord rooted in a specific note. Each chord is defined by its {@link ChordType}, such as
+ * "seventh" or "minor sixth", and its root note. The class offers methods for accessing
+ * the notes in the chord.
+ */
 public class Chord {
     private int root;
     private ChordType type;
     private static final ChordType[] SUFFIX_CHECKING_ORDER = new ChordType[] { ChordType.DIMINISHED, ChordType.HALF_DIMINISHED, ChordType.MINOR_SEVENTH, ChordType.MINOR_SIXTH, ChordType.MAJOR_SEVENTH, ChordType.ADDNINE, ChordType.SEVEN_NINE, ChordType.SIXTH, ChordType.MINOR, ChordType.SEVENTH, ChordType.MAJOR };
 
+    /**
+     * A chord type, such as "major" or "minor sixth". The following chord types are currently implemented:
+     * <ul>
+     *     <li>major triad (empty name suffix, so "C" = C-E-G is a major triad) </li>
+     *     <li>major sixth (name suffix "6", so "C6" = C-E-G-A is a major sixth chord)</li>
+     *     <li>dominant seventh (name suffix "7", so "C7" = C-E-G-Bb)</li>
+     *     <li>add-nine (name suffix "add9", so "Cadd9" = C-E-G-D)</li>
+     *     <li>dominant ninth without root note (name suffix "9", so "C9" = E-G-Bb-D)</li>
+     *     <li>major seventh (name suffix "mj7", so "Cmj7" = C-E-G-B)</li>
+     *     <li>minor triad (name suffix "m", so "Am" = A-C-E)</li>
+     *     <li>minor sixth (name suffix "m6", so "Am6" = A-C-E-F#)</li>
+     *     <li>minor seventh (name suffix "m7", so "Am7" = A-C-E-G)</li>
+     *     <li>half-diminished (name suffix "x7", so "Ax7" = A-C-Eb-G)</li>
+     *     <li>full-diminished (name suffix "07", so "A07" = A-C-Eb-Gb)</li>
+     * </ul>
+     */
     public static enum ChordType {
         MAJOR("", "", List.of(0,7), 0, 4, 7),
         SIXTH("6", "", List.of(0,7), 0, 4, 7, 9),
@@ -21,10 +42,11 @@ public class Chord {
         DIMINISHED("07", "", List.of(0, 3, 6, 9), 0, 3, 6, 9)
         ;
 
-        public final List<Integer> chordNotes;
-        public final String name;
-        public final Set<Integer> allowedBassNotes;
-        public final String mode;
+
+        private final List<Integer> chordNotes;
+        private final String name;
+        private final Set<Integer> allowedBassNotes;
+        private final String mode;
 
         private ChordType(String name, String mode, List<Integer> allowedBassNotes, Integer... notes) {
             this.name = name;
@@ -32,8 +54,56 @@ public class Chord {
             this.mode = mode;
             this.allowedBassNotes = new HashSet<>(allowedBassNotes);
         }
+
+        /**
+         * The notes in the chord, measured in semitones above the root of the chord.
+         */
+        public List<Integer> getChordNotes() {
+            return chordNotes;
+        }
+
+        /**
+         * The name suffix of the chord, such as "m" for minor.
+         *
+         * @return
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * The notes (in semitones above root note) that are allowed
+         * in the bass part of barbershop voicings. For major chords, these
+         * are roots and fifths; for minor chords, roots, thirds, and fifths.
+         * Currently only the root note is allowed in the bass of a half-diminished
+         * chord (is this correct?), and all notes are allowed in the bass of
+         * a fully diminished chord.
+         *
+         * @return
+         */
+        public Set<Integer> getAllowedBassNotes() {
+            return allowedBassNotes;
+        }
+
+        /**
+         * The mode of the chord: "" for major, "m" for minor.
+         * This method currently counts half-diminished chords as minor,
+         * fully diminished as "major".
+         *
+         * @return
+         */
+        public String getMode() {
+            return mode;
+        }
     }
 
+    /**
+     * Looks up a chord based on its root note and its chord type.
+     *
+     * @param root
+     * @param type
+     * @return
+     */
     // TODO reuse Chord objects
     public static Chord lookup(String root, ChordType type) {
         Chord chord = new Chord();
@@ -42,12 +112,24 @@ public class Chord {
         return chord;
     }
 
+    /**
+     * Looks up a chord based on its name, such as "Cmj7".
+     *
+     * @param chordName
+     * @return
+     */
     public static Chord lookup(String chordName) {
         ChordType type = chordTypeBySuffix(chordName);
         String root = chordName.substring(0, chordName.length()-type.name.length());
         return lookup(root, type);
     }
 
+    /**
+     * Returns the notes of the chord, as relative notes
+     * in the sense of {@link Note}.
+     *
+     * @return
+     */
     public Set<Integer> getNotes() {
         Set<Integer> ret = new HashSet<>();
 
@@ -68,18 +150,26 @@ public class Chord {
         return null;
     }
 
+    /**
+     * Checks if the given note is allowed in the bass part
+     * of this chord.
+     *
+     * @param note
+     * @return
+     */
     public boolean isAllowedBassNote(Note note) {
         int relativeNote = (note.getAbsoluteNote() - root)%12;
         return type.allowedBassNotes.contains(relativeNote);
     }
 
     /**
-     * Returns the key to which this chord belongs.
-     * Examples:
-     * - chord Cmaj7 &rarr; key C major
-     * - chord Am6 &rarr; key A minor (= C major)
-     *
-     * These keys can be used to choose accidentals correctly.
+     * Returns the key to which this chord belongs. This is a
+     * combination of the chord's root and its mode, as per
+     * {@link ChordType#getMode()}. Thus, the Cmaj7 chord is
+     * mapped to the key of C major, and the Am6 chord is
+     * mapped to the key of A minor.
+     * These keys can be used to spell the accidentals
+     * in the chord correctly.
      *
      * @return
      */
@@ -87,10 +177,21 @@ public class Chord {
         return Key.lookup(Note.getNoteName(root) + type.mode);
     }
 
+    /**
+     * Returns the root note of the chord, as a relative
+     * note in the sense of {@link Note}.
+     *
+     * @return
+     */
     public int getRoot() {
         return root;
     }
 
+    /**
+     * Returns the type of this chord.
+     *
+     * @return
+     */
     public ChordType getType() {
         return type;
     }

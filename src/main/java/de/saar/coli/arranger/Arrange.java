@@ -14,6 +14,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
 
+/**
+ * Arranges a melody and chords into a barbershop arrangement.
+ * This uses a Viterbi-style algorithm to traverse the melody
+ * from left to right, remembering possible chord voicings
+ * for each time step together with the best score of the voicings
+ * and voice leading decisions up to that point. This algorithm
+ * runs in linear time in the length of the melody. The scores
+ * for the voicings and voice leadings are determined by
+ * the rules in the de.saar.coli.arranger.rules package.
+ */
 public class Arrange {
     private Config config;
 
@@ -60,7 +70,7 @@ public class Arrange {
         fw.close();
     }
 
-    private Score arrange(Score score) {
+    public Score arrange(Score score) {
         int n = score.countNotes(VoicePart.LEAD);
         List<List<List<Note>>> possibleNotes = computePossibleNotes(score);
         Map<Item, Integer> bestScores = new HashMap<>();
@@ -120,7 +130,7 @@ public class Arrange {
         }
 
 
-        // show goal items
+        // construct best arrangement from best goal item
         List<Map.Entry<Item, Integer>> sortedEntries = new ArrayList<>(bestScores.entrySet());
         Collections.sort(sortedEntries, Comparator.comparing(Map.Entry::getValue));
         Map.Entry<Item, Integer> bestGoalItem = sortedEntries.get(sortedEntries.size() - 1);
@@ -128,24 +138,6 @@ public class Arrange {
 
         Score bestArrangedScore = extractBestScore(bestGoalItem.getKey(), backpointers, score);
         return bestArrangedScore;
-    }
-
-    private static class BackpointerColumn {
-        private BackpointerColumn previous;
-        private ListMultimap<Item, Backpointer> backpointers;
-
-        public BackpointerColumn(BackpointerColumn previous) {
-            this.previous = previous;
-            backpointers = ArrayListMultimap.create();
-        }
-
-        public BackpointerColumn getPrevious() {
-            return previous;
-        }
-
-        public ListMultimap<Item, Backpointer> getBackpointers() {
-            return backpointers;
-        }
     }
 
     private Score extractBestScore(Item bestFinalItem, BackpointerColumn backpointers, Score originalScore) {
@@ -163,7 +155,6 @@ public class Arrange {
                 break;
             } else {
                 item = bp.getPreviousItem();
-//                System.err.printf("[%03d] %s\n", notes.size(), item);
                 notes.add(item.lastNotes);
 
                 backpointers = backpointers.getPrevious();
@@ -172,17 +163,8 @@ public class Arrange {
 
         Collections.reverse(notes);
 
-        Score ret = new Score();
-        ret.setTitle(originalScore.getTitle());
+        Score ret = originalScore.cloneWithoutNotes();
         ret.setComposer(config.getArranger());
-        ret.setKey(originalScore.getKey());
-        ret.setQuartersPerMeasure(originalScore.getQuartersPerMeasure());
-        ret.setLyrics(originalScore.getLyrics());
-
-        for (Pair<Integer, Chord> chord : originalScore.getAllChords()) {
-            ret.addChord(chord.getLeft(), chord.getRight());
-        }
-
         for (Note[] notesHere : notes) {
             for (int part = 0; part < 4; part++) {
                 ret.addNote(part, notesHere[part]);
@@ -239,6 +221,26 @@ public class Arrange {
         });
 
         return ret;
+    }
+
+
+
+    private static class BackpointerColumn {
+        private BackpointerColumn previous;
+        private ListMultimap<Item, Backpointer> backpointers;
+
+        public BackpointerColumn(BackpointerColumn previous) {
+            this.previous = previous;
+            backpointers = ArrayListMultimap.create();
+        }
+
+        public BackpointerColumn getPrevious() {
+            return previous;
+        }
+
+        public ListMultimap<Item, Backpointer> getBackpointers() {
+            return backpointers;
+        }
     }
 
     private static class Backpointer {

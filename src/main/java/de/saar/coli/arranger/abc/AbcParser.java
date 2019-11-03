@@ -13,18 +13,32 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Reads limited ABC notation. Assumptions:
- * <p>
- * - song has a single voice
- * - only T, C, K, and M codes are read, others are ignored
- * - every note must have an explicit duration
- * - must have space between adjacent notes
- * - no rests
- * - K: field must come before all notes
+ * Reads a score in ABC notation and returns it as a
+ * {@link Score}. The primary use case is to read just
+ * a melody with its accompanying lyrics and chords.
+ * As such, this class does not support arbitrary ABC notation,
+ * but makes the following assumptions:
+ * <ul>
+ *     <li>The song has a single voice.</li>
+ *     <li>Only T, C, K, and M codes are read; all others are ignored. The K: field must come before all notes.</li>
+ *     <li>The L: code (base unit of time) is assumed to be 1/8 notes.</li>
+ *     <li>Every note must have an explicit duration (in 1/8 notes).</li>
+ *     <li>Adjacent notes are separated by whitespace.</li>
+ *     <li>Rests are not supported.</li>
+ *     <li>Chords are supported (enclosed in double quotes), and are spelled as explained in {@link de.saar.coli.arranger.Chord.ChordType}.</li>
+ * </ul>
  */
 public class AbcParser {
     private static Pattern LINE_PATTERN = Pattern.compile("\\s*(\\S+):\\s*(.+)");
 
+    /**
+     * Reads a Score from a Reader.
+     *
+     * @param abcReader
+     * @return
+     * @throws IOException - an I/O error occurred
+     * @throws AbcParsingException - something went wrong in parsing the ABC notation
+     */
     public Score read(Reader abcReader) throws IOException, AbcParsingException {
         BufferedReader r = new BufferedReader(abcReader);
         Score score = new Score("", "", "", 4);
