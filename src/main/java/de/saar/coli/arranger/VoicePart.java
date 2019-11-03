@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * A voice part of a barbershop arrangement. Each voice part has a name and a range
+ * of notes they can sing.
+ *
+ */
 public class VoicePart {
     public static final VoicePart[] VOICE_PARTS = new VoicePart[]{
             new VoicePart("Tenor", Note.create("G3", 0), Note.create("B4", 0)),
