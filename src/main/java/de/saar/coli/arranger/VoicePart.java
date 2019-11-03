@@ -5,6 +5,18 @@ import java.util.List;
 import java.util.Set;
 
 public class VoicePart {
+    public static final VoicePart[] VOICE_PARTS = new VoicePart[]{
+            new VoicePart("Tenor", Note.create("G3", 0), Note.create("B4", 0)),
+            new VoicePart("Lead", Note.create("C3", 0), Note.create("G4", 0)),
+            new VoicePart("Baritone", Note.create("C3", 0), Note.create("G4", 0)),
+            new VoicePart("Bass", Note.create("F2", 0), Note.create("C4", 0))
+    };
+
+    public static final int TENOR = 0;
+    public static final int LEAD = 1;
+    public static final int BARI = 2;
+    public static final int BASS = 3;
+
     private String name;
     private Note lowLimit;
     private Note highLimit;

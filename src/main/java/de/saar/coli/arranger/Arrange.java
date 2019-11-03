@@ -6,6 +6,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import de.saar.coli.arranger.abc.AbcParser;
 import de.saar.coli.arranger.abc.AbcWriter;
+import de.saar.coli.arranger.rules.*;
 
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -16,14 +17,18 @@ import java.util.*;
 public class Arrange {
     private Config config;
 
-    private static final VoicePart[] VOICE_PARTS = new VoicePart[]{
-            new VoicePart("Tenor", Note.create("G3", 0), Note.create("B4", 0)),
-            new VoicePart("Lead", Note.create("C3", 0), Note.create("G4", 0)),
-            new VoicePart("Baritone", Note.create("C3", 0), Note.create("G4", 0)),
-            new VoicePart("Bass", Note.create("F2", 0), Note.create("C4", 0))
+    private static final VoiceLeadingRule[] VOICE_LEADING_RULES = {
+            new LdHarmonyLeaps(),
+            new LdParallelOctaves()
     };
 
-    private static final int TENOR = 0, LEAD = 1, BARI = 2, BASS = 3;
+    private static final VoicingRule[] VOICING_RULES = {
+            new VoUseAllChordNotes(),
+            new VoBassLowest(),
+            new VoTenorCrossing(),
+            new VoUnisonNotes(),
+            new VoWideSpread()
+    };
 
     public Arrange(Config config) {
         this.config = config;
@@ -35,7 +40,7 @@ public class Arrange {
         JCommander jc = JCommander.newBuilder().addObject(arguments).build();
         jc.parse(args);
 
-        if(arguments.help) {
+        if (arguments.help) {
             jc.usage();
             System.exit(0);
         }
@@ -56,14 +61,13 @@ public class Arrange {
     }
 
     private Score arrange(Score score) {
-        int n = score.countNotes(LEAD);
-
+        int n = score.countNotes(VoicePart.LEAD);
         List<List<List<Note>>> possibleNotes = computePossibleNotes(score);
-        assert n == possibleNotes.size();
-
         Map<Item, Integer> bestScores = new HashMap<>();
         BackpointerColumn backpointers = new BackpointerColumn(null);
         int time = 0;
+
+        assert n == possibleNotes.size();
 
         for (int pos = 0; pos < n; pos++) {
             List<List<Note>> notesHere = possibleNotes.get(pos);
@@ -72,36 +76,34 @@ public class Arrange {
             Map<Item, Integer> bestScoresNext = new HashMap<>();
             BackpointerColumn backpointersNext = new BackpointerColumn(backpointers);
 
-            for (Note bs : notesHere.get(BASS)) {
+            for (Note bs : notesHere.get(VoicePart.BASS)) {
                 if (chordHere.isAllowedBassNote(bs)) {
-                    for (Note ld : notesHere.get(LEAD)) {
-                        for (Note br : notesHere.get(BARI)) {
-                            for (Note tn : notesHere.get(TENOR)) {
-                                int itemScore = scoreLexicalChord(tn, ld, br, bs, chordHere);
+                    for (Note ld : notesHere.get(VoicePart.LEAD)) {
+                        for (Note br : notesHere.get(VoicePart.BARI)) {
+                            for (Note tn : notesHere.get(VoicePart.TENOR)) {
+                                Note[] notes = new Note[]{tn, ld, br, bs};
+                                int voicingScore = scoreVoicing(notes, chordHere);
 
-                                if (itemScore > Integer.MIN_VALUE) {
-                                    Note[] notes = new Note[]{tn, ld, br, bs};
+                                if (voicingScore > Integer.MIN_VALUE) {
                                     Item it = new Item(notes);
 
                                     if (pos == 0) {
                                         // first timestep
-                                        backpointersNext.getBackpointers().put(it, null); // null backpointer = lexical cell
-                                        bestScoresNext.put(it, itemScore);
+                                        backpointersNext.getBackpointers().put(it, null); // null backpointer = leftmost cell
+                                        bestScoresNext.put(it, voicingScore);
                                     } else {
                                         // later timesteps
                                         for (Map.Entry<Item, Integer> oldEntry : bestScores.entrySet()) {
-                                            int transitionScore = scoreTransition(oldEntry.getKey().lastNotes, notes);
-                                            int totalScore = itemScore + transitionScore + oldEntry.getValue();
+                                            int voiceLeadingScore = scoreVoiceLeading(oldEntry.getKey().lastNotes, notes);
+                                            int totalScore = voicingScore + voiceLeadingScore + oldEntry.getValue();
 
-                                            if (totalScore >= -100) {
-                                                Item newItem = new Item(notes);
-                                                Backpointer bp = new Backpointer(oldEntry.getKey(), totalScore);
-                                                backpointersNext.getBackpointers().put(newItem, bp);
+                                            Item newItem = new Item(notes);
+                                            Backpointer bp = new Backpointer(oldEntry.getKey(), totalScore);
+                                            backpointersNext.getBackpointers().put(newItem, bp);
 
-                                                Integer oldBestScore = bestScoresNext.get(newItem);
-                                                if (oldBestScore == null || oldBestScore < totalScore) {
-                                                    bestScoresNext.put(newItem, totalScore);
-                                                }
+                                            Integer oldBestScore = bestScoresNext.get(newItem);
+                                            if (oldBestScore == null || oldBestScore < totalScore) {
+                                                bestScoresNext.put(newItem, totalScore);
                                             }
                                         }
                                     }
@@ -112,7 +114,7 @@ public class Arrange {
                 }
             }
 
-            time += score.getPart(LEAD).get(pos).getDuration();
+            time += score.getPart(VoicePart.LEAD).get(pos).getDuration();
             bestScores = bestScoresNext;
             backpointers = backpointersNext;
         }
@@ -177,7 +179,7 @@ public class Arrange {
         ret.setQuartersPerMeasure(originalScore.getQuartersPerMeasure());
         ret.setLyrics(originalScore.getLyrics());
 
-        for( Pair<Integer,Chord> chord : originalScore.getAllChords()) {
+        for (Pair<Integer, Chord> chord : originalScore.getAllChords()) {
             ret.addChord(chord.getLeft(), chord.getRight());
         }
 
@@ -190,63 +192,28 @@ public class Arrange {
         return ret;
     }
 
-    private int scoreTransition(Note[] from, Note[] to) {
+    private int scoreVoiceLeading(Note[] from, Note[] to) {
         int score = 0;
 
-        // penalize wide jumps in Br and Tn
-        for (int part = 0; part < 4; part++) {
-            if (part == TENOR || part == BARI) {
-                if (from[part].getAbsoluteDistance(to[part]) > 3) {
-                    score += config.getScores().getHarmonyLeaps();
-                }
-            }
-        }
-
-        // penalize parallel octaves
-        for (int part = 0; part < 4; part++) {
-            for (int other = part + 1; other < 4; other++) {
-                if (from[part].getAbsoluteDistance(from[other]) == 12) {
-                    if (to[part].getAbsoluteDistance(to[other]) == 12) {
-                        score += config.getScores().getParallelOctaves();
-                    }
-                }
-            }
+        for (VoiceLeadingRule rule : VOICE_LEADING_RULES) {
+            score += rule.score(from, to, config);
         }
 
         return score;
     }
 
-    private int scoreLexicalChord(Note tn, Note ld, Note br, Note bs, Chord chord) {
-        // must use all chord notes
-        Set<Integer> differentRelativeNotes = new HashSet<>(List.of(tn.getRelativeNote(), ld.getRelativeNote(), br.getRelativeNote(), bs.getRelativeNote()));
-        if (differentRelativeNotes.size() < chord.getNotes().size()) {
-            return Integer.MIN_VALUE;
-        }
-
+    private int scoreVoicing(Note[] voicing, Chord chord) {
         int score = 0;
 
-        // Tn likes to be highest note
-        if (tn.getAbsoluteNote() < ld.getAbsoluteNote() || tn.getAbsoluteNote() < br.getAbsoluteNote()) {
-            score += config.getScores().getTenorCrossing();
-        }
+        for (VoicingRule rule : VOICING_RULES) {
+            int ruleScore = rule.score(voicing, chord, config);
 
-        // Bs really wants to be lowest note
-        if (bs.getAbsoluteNote() > br.getAbsoluteNote() || bs.getAbsoluteNote() > ld.getAbsoluteNote() || bs.getAbsoluteNote() > tn.getAbsoluteNote()) {
-//            score -= 100;
-            return Integer.MIN_VALUE;
-        }
+            // shortcut for disallowed voicings
+            if (ruleScore == Integer.MIN_VALUE) {
+                return Integer.MIN_VALUE;
+            }
 
-        // disprefer unison
-        Set<Integer> differentAbsoluteNotes = new HashSet<>(List.of(tn.getAbsoluteNote(), ld.getAbsoluteNote(), br.getAbsoluteNote(), bs.getAbsoluteNote()));
-        if (differentAbsoluteNotes.size() < 4) {
-            score += config.getScores().getUnisonNotes();
-        }
-
-        // disprefer very wide spread
-        int highest = Collections.max(differentAbsoluteNotes);
-        int lowest = Collections.min(differentAbsoluteNotes);
-        if (highest - lowest > 19) { // octave + fifth
-            score += config.getScores().getWideSpread();
+            score += rule.score(voicing, chord, config);
         }
 
         return score;
@@ -256,17 +223,17 @@ public class Arrange {
     private List<List<List<Note>>> computePossibleNotes(Score score) {
         List<List<List<Note>>> ret = new ArrayList<>();
 
-        score.foreachNoteAndChord(LEAD, (note, chord) -> {
+        score.foreachNoteAndChord(VoicePart.LEAD, (note, chord) -> {
             Set<Integer> chordNotes = chord.getNotes();
             List<List<Note>> notesAtTime = new ArrayList<>();
             ret.add(notesAtTime);
 
             for (int part = 0; part < 4; part++) {
-                if (part == LEAD) {
+                if (part == VoicePart.LEAD) {
                     List<Note> x = List.of(note);
                     notesAtTime.add(x);
                 } else {
-                    notesAtTime.add(VOICE_PARTS[part].getNotesInRange(chordNotes, note.getDuration()));
+                    notesAtTime.add(VoicePart.VOICE_PARTS[part].getNotesInRange(chordNotes, note.getDuration()));
                 }
             }
         });
@@ -314,7 +281,7 @@ public class Arrange {
         @Override
         public String toString() {
             return String.format("[%s %s %s %s]",
-                    lastNotes[TENOR], lastNotes[LEAD], lastNotes[BARI], lastNotes[BASS]);
+                    lastNotes[VoicePart.TENOR], lastNotes[VoicePart.LEAD], lastNotes[VoicePart.BARI], lastNotes[VoicePart.BASS]);
         }
 
         @Override
@@ -340,10 +307,10 @@ public class Arrange {
         @Parameter(description = "Name of the input file (*.abc).", required = true)
         private String inputFilename = null;
 
-        @Parameter(names = {"--output", "-o"}, description="Name of the output file (*.abc).")
+        @Parameter(names = {"--output", "-o"}, description = "Name of the output file (*.abc).")
         private String outputFilename = "arranged.abc";
 
-        @Parameter(names = "--help", description="Display usage instructions.", help = true)
+        @Parameter(names = "--help", description = "Display usage instructions.", help = true)
         private boolean help;
 
     }
