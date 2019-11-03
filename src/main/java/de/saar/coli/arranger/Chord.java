@@ -76,8 +76,8 @@ public class Chord {
     /**
      * Returns the key to which this chord belongs.
      * Examples:
-     * - chord Cmaj7 -> key C major
-     * - chord Am6 -> key A minor (= C major)
+     * - chord Cmaj7 &rarr; key C major
+     * - chord Am6 &rarr; key A minor (= C major)
      *
      * These keys can be used to choose accidentals correctly.
      *
