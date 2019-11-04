@@ -22,13 +22,13 @@ Then on your command line, run AABA as follows:
 java -jar arranger-1.0.jar -o <outputfile.abc> <inputfile.abc>
 ```
 
-Replace `<inputfile.abc>` by the file that contains your melody and chords in [ABC notation](http://abcnotation.com/). As an example, have a look at the file [down_our_way.abc](https://github.com/alexanderkoller/aaba/blob/master/down_our_way.abc) in this repository. The notation of the chords is documented [here](https://alexanderkoller.github.io/aaba/javadoc/de/saar/coli/arranger/Chord.ChordType.html).
-
-Replace `<outputfile.abc>` by the name of the file to which you want the arrangement to be written. If you don't specify an output file name, `arranged.abc` will be used by default.
+Replace `<inputfile.abc>` by the file that contains your melody and chords in [ABC notation](http://abcnotation.com/) (see below). Replace `<outputfile.abc>` by the name of the file to which you want the arrangement to be written. If you don't specify an output file name, `arranged.abc` will be used by default.
 
 ## ABC music notation
 
 AABA uses text files in [ABC format](http://abcnotation.com/) both for the input files (melody + chords) and for the output files (arrangement). You need to prepare the melody and chords in ABC format yourself, and you will need additional software for viewing and playing the generated arrangements.
+
+As an example, have a look at the file [down\_our\_way.abc](https://github.com/alexanderkoller/aaba/blob/master/down_our_way.abc) in this repository. The notation of the chords is documented [here](https://alexanderkoller.github.io/aaba/javadoc/de/saar/coli/arranger/Chord.ChordType.html).
 
 There is quite a bit of software for editing, viewing, and playing ABC files. You need to be careful that your ABC software supports ABC version 2.1; older versions of ABC did not support multiple voices. I have been quite happy with [EasyABC](https://www.nilsliberg.se/ksp/easyabc/).
 
