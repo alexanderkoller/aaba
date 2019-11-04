@@ -1,8 +1,8 @@
-# Automatic Barbershop Arranger
+# AABA: <br/> Alexander's Automatic Barbershop Arranger
 
-This program takes a melody and some chords as input and will automatically produce a four-part barbershop arrangement out of it. [Elementary arranging rules](https://github.com/alexanderkoller/arranger/wiki/Arranging-Rules) will be respected.
+This program takes a melody and some chords as input and will automatically produce a four-part barbershop arrangement out of it. [Elementary arranging rules](https://github.com/alexanderkoller/aaba/wiki/Arranging-Rules) will be respected.
 
-For instance, say that you are asking the ABA to arrange the [melody and chords of "Down Our Way"](https://github.com/alexanderkoller/arranger/blob/master/down_our_way.abc):
+For instance, say that you are asking AABA to arrange the [melody and chords of "Down Our Way"](https://github.com/alexanderkoller/aaba/blob/master/down_our_way.abc):
 
 ![Down Our Way, original](docs/down_our_way.png)
 
@@ -10,19 +10,19 @@ It might then produce the following arrangement, which is close but not identica
 
 ![Down Our Way, original](docs/down_our_way_arranged.png)
 
-## Running the Automatic Barbershop Arranger
+## Running AABA
 
-You will need a recent version of [Java](https://www.java.com) to run the ABA.
+You will need a recent version of [Java](https://www.java.com) to run AABA.
 
-Download the most [recent release](https://github.com/alexanderkoller/arranger/releases) of the ABA, or build it yourself from the current sources.
+Download the most [recent release](https://github.com/alexanderkoller/aaba/releases) of the ABA, or build it yourself from the current sources.
 
-Then on your command line, run the ABA as follows:
+Then on your command line, run AABA as follows:
 
 ```
 java -jar arranger-1.0.jar -o <outputfile.abc> <inputfile.abc>
 ```
 
-Replace `<inputfile.abc>` by the file that contains your melody and chords in [ABC notation](http://abcnotation.com/). As an example, have a look at the file [down_our_way.abc](https://github.com/alexanderkoller/arranger/blob/master/down_our_way.abc) in this repository. The notation of the chords is documented [here](https://alexanderkoller.github.io/arranger/javadoc/de/saar/coli/arranger/Chord.ChordType.html).
+Replace `<inputfile.abc>` by the file that contains your melody and chords in [ABC notation](http://abcnotation.com/). As an example, have a look at the file [down_our_way.abc](https://github.com/alexanderkoller/aaba/blob/master/down_our_way.abc) in this repository. The notation of the chords is documented [here](https://alexanderkoller.github.io/aaba/javadoc/de/saar/coli/arranger/Chord.ChordType.html).
 
 Replace `<outputfile.abc>` by the name of the file to which you want the arrangement to be written. If you don't specify an output file name, `arranged.abc` will be used by default.
 
@@ -34,4 +34,4 @@ There is quite a bit of software for editing, viewing, and playing ABC files. Yo
 
 ## Documentation
 
-Check out the [Github wiki](https://github.com/alexanderkoller/arranger/wiki) and the [Javadoc](https://alexanderkoller.github.io/arranger/javadoc/index.html) for more details.
+Check out the [Github wiki](https://github.com/aaba/arranger/wiki) and the [Javadoc](https://alexanderkoller.github.io/aaba/javadoc/index.html) for more details.
