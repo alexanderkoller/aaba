@@ -34,4 +34,4 @@ There is quite a bit of software for editing, viewing, and playing ABC files. Yo
 
 ## Documentation
 
-Check out the [Github wiki](https://github.com/aaba/arranger/wiki) and the [Javadoc](https://alexanderkoller.github.io/aaba/javadoc/index.html) for more details.
+Check out the [Github wiki](https://github.com/alexanderkoller/aaba/wiki) and the [Javadoc](https://alexanderkoller.github.io/aaba/javadoc/index.html) for more details.
