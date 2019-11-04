@@ -10,6 +10,9 @@ It might then produce the following arrangement, which is close but not identica
 
 ![Down Our Way, original](docs/down_our_way_arranged.png)
 
+Arguably, some voicing decisions that AABA made are not optimal, e.g. the bass should be on the low Bb on "Down". This is because not many rules are currently implemented regarding good voicing and voice leading decisions, and the weights of these rules are probably not ideal yet. If you would like to contribute your knowledge of arranging, or if you would like to contribute some of your own arrangements so we can let the computer learn rule weights through statistical analysis, please [get in touch](http://www.coli.uni-saarland.de/~koller/)!
+
+
 ## Running AABA
 
 You will need a recent version of [Java](https://www.java.com) to run AABA.
