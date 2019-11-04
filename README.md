@@ -14,7 +14,7 @@ It might then produce the following arrangement, which is close but not identica
 
 You will need a recent version of [Java](https://www.java.com) to run AABA.
 
-Download the most [recent release](https://github.com/alexanderkoller/aaba/releases) of the ABA, or build it yourself from the current sources.
+Download the most [recent release](https://github.com/alexanderkoller/aaba/releases) of AABA, or build it yourself from the current sources.
 
 Then on your command line, run AABA as follows:
 
@@ -28,7 +28,7 @@ Replace `<outputfile.abc>` by the name of the file to which you want the arrange
 
 ## ABC music notation
 
-The ABA uses text files in [ABC format](http://abcnotation.com/) both for the input files (melody + chords) and for the output files (arrangement). You need to prepare the melody and chords in ABC format yourself, and you will need additional software for viewing and playing the generated arrangements.
+AABA uses text files in [ABC format](http://abcnotation.com/) both for the input files (melody + chords) and for the output files (arrangement). You need to prepare the melody and chords in ABC format yourself, and you will need additional software for viewing and playing the generated arrangements.
 
 There is quite a bit of software for editing, viewing, and playing ABC files. You need to be careful that your ABC software supports ABC version 2.1; older versions of ABC did not support multiple voices. I have been quite happy with [EasyABC](https://www.nilsliberg.se/ksp/easyabc/).
 
