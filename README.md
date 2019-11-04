@@ -4,11 +4,11 @@ This program takes a melody and some chords as input and will automatically prod
 
 For instance, say that you are asking the ABA to arrange the [melody and chords of "Down Our Way"](https://github.com/alexanderkoller/arranger/blob/master/down_our_way.abc):
 
-![Down Our Way, original](doc/down_our_way.png)
+![Down Our Way, original](docs/down_our_way.png)
 
 It might then produce the following arrangement, which is close but not identical to the Polecat arrangement:
 
-![Down Our Way, original](doc/down_our_way_arranged.png)
+![Down Our Way, original](docs/down_our_way_arranged.png)
 
 ## Running the Automatic Barbershop Arranger
 
@@ -22,7 +22,9 @@ Then on your command line, run the ABA as follows:
 java -jar arranger-1.0.jar -o <outputfile.abc> <inputfile.abc>
 ```
 
-Replace `<inputfile.abc>` by the file that contains your melody and chords in [ABC notation](http://abcnotation.com/). As an example, have a look at the file [down_our_way.abc](https://github.com/alexanderkoller/arranger/blob/master/down_our_way.abc) in this repository. Replace `<outputfile.abc>` by the name of the file to which you want the arrangement to be written. If you don't specify an output file name, `arranged.abc` will be used by default.
+Replace `<inputfile.abc>` by the file that contains your melody and chords in [ABC notation](http://abcnotation.com/). As an example, have a look at the file [down_our_way.abc](https://github.com/alexanderkoller/arranger/blob/master/down_our_way.abc) in this repository. The notation of the chords is documented [here](https://alexanderkoller.github.io/arranger/javadoc/de/saar/coli/arranger/Chord.ChordType.html).
+
+Replace `<outputfile.abc>` by the name of the file to which you want the arrangement to be written. If you don't specify an output file name, `arranged.abc` will be used by default.
 
 ## ABC music notation
 
@@ -30,3 +32,6 @@ The ABA uses text files in [ABC format](http://abcnotation.com/) both for the in
 
 There is quite a bit of software for editing, viewing, and playing ABC files. You need to be careful that your ABC software supports ABC version 2.1; older versions of ABC did not support multiple voices. I have been quite happy with [EasyABC](https://www.nilsliberg.se/ksp/easyabc/).
 
+## Documentation
+
+Check out the [Github wiki](https://github.com/alexanderkoller/arranger/wiki) and the [Javadoc](https://alexanderkoller.github.io/arranger/javadoc/index.html) for more details.
