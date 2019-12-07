@@ -20,8 +20,8 @@ voiceParts:
   - name: Bass
     bottom: F2
     top: C4
-#
-#clefs:
-#  upper: treble-8
-#  lower: bass
+
+clefs:
+  - treble-8
+  - bass
 

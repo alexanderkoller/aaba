@@ -14,6 +14,7 @@ public class Config {
     private String arranger;
     private Scores scores;
     private List<VoicePart> voiceParts;
+    private List<Clef> clefs;
 
     public static Config read(Reader configReader) {
         Yaml yaml = new Yaml(new Constructor(Config.class));
@@ -22,6 +23,10 @@ public class Config {
         String errVoiceParts = checkVoiceParts(ret.voiceParts);
         if( errVoiceParts != null ) {
             throw new RuntimeException("Error reading configuration file: " + errVoiceParts);
+        }
+
+        if( ret.clefs.size() != 2 ) {
+            throw new RuntimeException("Error reading configuration file: need exactly two clefs.");
         }
 
         return ret;
@@ -64,6 +69,14 @@ public class Config {
 
     public void setVoiceParts(List<VoicePart> voiceParts) {
         this.voiceParts = voiceParts;
+    }
+
+    public List<Clef> getClefs() {
+        return clefs;
+    }
+
+    public void setClefs(List<Clef> clefs) {
+        this.clefs = clefs;
     }
 
     public static class Scores {

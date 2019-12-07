@@ -9,6 +9,7 @@ import abcj.ui.MainGUI;
 import abcj.ui.MainPane;
 import de.saar.coli.arranger.abc.AbcWriter;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -26,8 +27,11 @@ public class ScoreViewer {
     private TuneList list;
     private MainGUI gui;
     private ABCJ abcj;
+    private Config config;
 
-    public ScoreViewer() {
+    public ScoreViewer() throws FileNotFoundException {
+        config = Arrange.loadConfig();
+
         Library lib = new Library();
         book = new TuneBook(lib, "tunebook.txt", "Test Tunebook", true);
         list = new TuneList(lib, "Test Tunelist");
@@ -43,7 +47,7 @@ public class ScoreViewer {
         StringWriter sw = new StringWriter();
 
         try {
-            new AbcWriter().write(score, sw);
+            new AbcWriter(config).write(score, sw);
         } catch (IOException e) {
             e.printStackTrace();
         }

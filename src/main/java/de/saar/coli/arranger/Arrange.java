@@ -60,14 +60,14 @@ public class Arrange {
         Arrange arranger = new Arrange(config);
         Score bestArrangedScore = arranger.arrange(score);
 
-        AbcWriter abcw = new AbcWriter();
+        AbcWriter abcw = new AbcWriter(config);
         FileWriter fw = new FileWriter(arguments.outputFilename);
         abcw.write(bestArrangedScore, fw);
         fw.flush();
         fw.close();
     }
 
-    private static Config loadConfig() throws FileNotFoundException {
+    public static Config loadConfig() throws FileNotFoundException {
         if( new File("aaba.yaml").exists() ) {
             System.out.println("Reading configuration from aaba.yaml.");
             return Config.read(new FileReader("aaba.yaml"));

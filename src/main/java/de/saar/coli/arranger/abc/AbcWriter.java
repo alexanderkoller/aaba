@@ -9,6 +9,7 @@ import au.com.codeka.carrot.resource.ResourceLocator;
 import de.saar.coli.arranger.*;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +19,12 @@ import java.util.Map;
  *
  */
 public class AbcWriter {
+    private Config config;
+
+    public AbcWriter(Config config) {
+        this.config = config;
+    }
+
     /**
      * Writes the score to the given writer in ABC notation.
      *
@@ -65,6 +72,12 @@ public class AbcWriter {
 
             bindings.put(VoicePart.PART_NAMES[i], buf.toString());
         }
+
+        List<String> clefspec = new ArrayList<>();
+        for( Clef clef : config.getClefs()) {
+            clefspec.add(clef.getClefSpec());
+        }
+        bindings.put("clefspec", clefspec);
 
         try {
             String abc = engine.process("template.abc", new MapBindings(bindings));
