@@ -2,7 +2,7 @@ package de.saar.coli.arranger;
 
 public class Clef {
     private String name;
-    private static final String ALLOWED_CLEFS[] = new String[] { "treble-8", "bass" };
+    private static final String ALLOWED_CLEFS[] = new String[] { "treble-8", "bass", "treble", "bass+8" };
 
     private static boolean isAllowed(String clefName) {
         for( String x : ALLOWED_CLEFS ) {
@@ -32,13 +32,12 @@ public class Clef {
      * @return
      */
     public String getClefSpec() {
-        if( "bass".equals(name) ) {
-            return "clef=bass";
-        } else if( "treble-8".equals(name)) {
+        if( "treble-8".equals(name) ) {
             return "middle=B, clef=treble-8";
+        } else if( "bass+8".equals(name)) {
+            return "middle=D clef=bass+8";
+        } else {
+            return "clef=" + name;
         }
-
-        // this should never happen because clef names are checked for validity in constructor
-        return null;
     }
 }

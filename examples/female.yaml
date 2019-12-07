@@ -1,0 +1,27 @@
+arranger: Automatically arranged by AABA
+
+scores:
+  harmonyLeaps: -20
+  parallelOctaves: -20
+  tenorCrossing: -10
+  unisonNotes: -50
+  wideSpread: -20
+
+voiceParts:
+  - name: Tenor
+    bottom: D4
+    top: G5
+  - name: Lead
+    bottom: Ab3
+    top: D5
+  - name: Baritone
+    bottom: Ab3
+    top: C5
+  - name: Bass
+    bottom: Eb3
+    top: G4
+
+clefs:
+  - treble
+  - bass+8
+

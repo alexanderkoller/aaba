@@ -30,7 +30,7 @@ public class ScoreViewer {
     private Config config;
 
     public ScoreViewer() throws FileNotFoundException {
-        config = Arrange.loadConfig();
+        config = Arrange.loadConfig(null);
 
         Library lib = new Library();
         book = new TuneBook(lib, "tunebook.txt", "Test Tunebook", true);

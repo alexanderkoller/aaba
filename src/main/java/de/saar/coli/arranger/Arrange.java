@@ -51,7 +51,7 @@ public class Arrange {
             System.exit(0);
         }
 
-        Config config = loadConfig();
+        Config config = loadConfig(arguments.configFilename);
 
         System.out.printf("Reading melody and chords from: %s\n", arguments.inputFilename);
         System.out.printf("Writing arrangement to: %s\n\n", arguments.outputFilename);
@@ -60,17 +60,21 @@ public class Arrange {
         Arrange arranger = new Arrange(config);
         Score bestArrangedScore = arranger.arrange(score);
 
-        AbcWriter abcw = new AbcWriter(config);
-        FileWriter fw = new FileWriter(arguments.outputFilename);
-        abcw.write(bestArrangedScore, fw);
-        fw.flush();
-        fw.close();
+        if( bestArrangedScore == null ) {
+            System.out.println("Could not find a valid arrangement.");
+        } else {
+            AbcWriter abcw = new AbcWriter(config);
+            FileWriter fw = new FileWriter(arguments.outputFilename);
+            abcw.write(bestArrangedScore, fw);
+            fw.flush();
+            fw.close();
+        }
     }
 
-    public static Config loadConfig() throws FileNotFoundException {
-        if( new File("aaba.yaml").exists() ) {
-            System.out.println("Reading configuration from aaba.yaml.");
-            return Config.read(new FileReader("aaba.yaml"));
+    public static Config loadConfig(String configFilename) throws FileNotFoundException {
+        if( configFilename != null && new File(configFilename).exists() ) {
+            System.out.printf("Reading configuration from %s ...\n", configFilename);
+            return Config.read(new FileReader(configFilename));
         } else {
             System.out.println("Using default configuration.");
             return Config.read(new InputStreamReader(Arrange.class.getResourceAsStream("/config.yaml")));
@@ -138,13 +142,17 @@ public class Arrange {
 
 
         // construct best arrangement from best goal item
-        List<Map.Entry<Item, Integer>> sortedEntries = new ArrayList<>(bestScores.entrySet());
-        Collections.sort(sortedEntries, Comparator.comparing(Map.Entry::getValue));
-        Map.Entry<Item, Integer> bestGoalItem = sortedEntries.get(sortedEntries.size() - 1);
-        System.out.printf("Best arrangement has score %d.\n", bestGoalItem.getValue());
+        if( bestScores.isEmpty() ) {
+            return null;
+        } else {
+            List<Map.Entry<Item, Integer>> sortedEntries = new ArrayList<>(bestScores.entrySet());
+            Collections.sort(sortedEntries, Comparator.comparing(Map.Entry::getValue));
+            Map.Entry<Item, Integer> bestGoalItem = sortedEntries.get(sortedEntries.size() - 1);
+            System.out.printf("Best arrangement has score %d.\n", bestGoalItem.getValue());
 
-        Score bestArrangedScore = extractBestScore(bestGoalItem.getKey(), backpointers, score);
-        return bestArrangedScore;
+            Score bestArrangedScore = extractBestScore(bestGoalItem.getKey(), backpointers, score);
+            return bestArrangedScore;
+        }
     }
 
     private Score extractBestScore(Item bestFinalItem, BackpointerColumn backpointers, Score originalScore) {
@@ -322,6 +330,9 @@ public class Arrange {
 
         @Parameter(names = {"--output", "-o"}, description = "Name of the output file (*.abc).")
         private String outputFilename = "arranged.abc";
+
+        @Parameter(names = {"--config", "-c"}, description = "Name of the configuration file (*.yaml).")
+        private String configFilename = "aaba.yaml";
 
         @Parameter(names = "--help", description = "Display usage instructions.", help = true)
         private boolean help;
