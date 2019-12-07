@@ -6,3 +6,22 @@ scores:
   tenorCrossing: -10
   unisonNotes: -50
   wideSpread: -20
+
+voiceParts:
+  - name: Tenor
+    bottom: G3
+    top: B4
+  - name: Lead
+    bottom: C3
+    top: G4
+  - name: Baritone
+    bottom: C3
+    top: G4
+  - name: Bass
+    bottom: F2
+    top: C4
+#
+#clefs:
+#  upper: treble-8
+#  lower: bass
+

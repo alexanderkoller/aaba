@@ -8,10 +8,7 @@ import de.saar.coli.arranger.abc.AbcParser;
 import de.saar.coli.arranger.abc.AbcWriter;
 import de.saar.coli.arranger.rules.*;
 
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -45,7 +42,6 @@ public class Arrange {
     }
 
     public static void main(String[] args) throws IOException, AbcParser.AbcParsingException {
-        Config config = Config.read(new InputStreamReader(Arrange.class.getResourceAsStream("/config.yaml")));
         Args arguments = new Args();
         JCommander jc = JCommander.newBuilder().addObject(arguments).build();
         jc.parse(args);
@@ -55,11 +51,12 @@ public class Arrange {
             System.exit(0);
         }
 
+        Config config = loadConfig();
+
         System.out.printf("Reading melody and chords from: %s\n", arguments.inputFilename);
         System.out.printf("Writing arrangement to: %s\n\n", arguments.outputFilename);
 
         Score score = new AbcParser().read(new FileReader(arguments.inputFilename));
-
         Arrange arranger = new Arrange(config);
         Score bestArrangedScore = arranger.arrange(score);
 
@@ -68,6 +65,16 @@ public class Arrange {
         abcw.write(bestArrangedScore, fw);
         fw.flush();
         fw.close();
+    }
+
+    private static Config loadConfig() throws FileNotFoundException {
+        if( new File("aaba.yaml").exists() ) {
+            System.out.println("Reading configuration from aaba.yaml.");
+            return Config.read(new FileReader("aaba.yaml"));
+        } else {
+            System.out.println("Using default configuration.");
+            return Config.read(new InputStreamReader(Arrange.class.getResourceAsStream("/config.yaml")));
+        }
     }
 
     public Score arrange(Score score) {
@@ -215,12 +222,16 @@ public class Arrange {
                     List<Note> x = List.of(note);
                     notesAtTime.add(x);
                 } else {
-                    notesAtTime.add(VoicePart.VOICE_PARTS[part].getNotesInRange(chordNotes, note.getDuration()));
+                    notesAtTime.add(getVoicePart(part).getNotesInRange(chordNotes, note.getDuration()));
                 }
             }
         });
 
         return ret;
+    }
+
+    private VoicePart getVoicePart(int partId) {
+        return config.getVoiceParts().get(partId);
     }
 
 

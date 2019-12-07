@@ -10,13 +10,6 @@ import java.util.Set;
  *
  */
 public class VoicePart {
-    public static final VoicePart[] VOICE_PARTS = new VoicePart[]{
-            new VoicePart("Tenor", Note.create("G3", 0), Note.create("B4", 0)),
-            new VoicePart("Lead", Note.create("C3", 0), Note.create("G4", 0)),
-            new VoicePart("Baritone", Note.create("C3", 0), Note.create("G4", 0)),
-            new VoicePart("Bass", Note.create("F2", 0), Note.create("C4", 0))
-    };
-
     public static final int TENOR = 0;
     public static final int LEAD = 1;
     public static final int BARI = 2;
@@ -33,8 +26,15 @@ public class VoicePart {
         this.highLimit = highLimit;
     }
 
+    public VoicePart() {
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Note getLowLimit() {
@@ -55,5 +55,18 @@ public class VoicePart {
         }
 
         return notesForPart;
+    }
+
+    public void setBottom(String bottom) {
+        lowLimit = Note.create(bottom, 0);
+    }
+
+    public void setTop(String top) {
+        highLimit = Note.create(top, 0);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s:%s-%s", name, lowLimit, highLimit);
     }
 }
