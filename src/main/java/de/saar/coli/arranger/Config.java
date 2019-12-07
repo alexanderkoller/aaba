@@ -4,7 +4,7 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.Reader;
-import java.util.List;
+import java.util.*;
 
 /**
  * A configuration file for the automatic arranger.
@@ -15,15 +15,13 @@ public class Config {
     private Scores scores;
     private List<VoicePart> voiceParts;
     private List<Clef> clefs;
+    private static final Set<String> ALL_VOICEPARTS = new HashSet<>(List.of("Tenor", "Lead", "Baritone", "Bass"));
 
     public static Config read(Reader configReader) {
         Yaml yaml = new Yaml(new Constructor(Config.class));
         Config ret = (Config) yaml.load(configReader);
 
-        String errVoiceParts = checkVoiceParts(ret.voiceParts);
-        if( errVoiceParts != null ) {
-            throw new RuntimeException("Error reading configuration file: " + errVoiceParts);
-        }
+        ret.voiceParts = sortVoiceParts(ret.voiceParts);
 
         if( ret.clefs.size() != 2 ) {
             throw new RuntimeException("Error reading configuration file: need exactly two clefs.");
@@ -32,19 +30,23 @@ public class Config {
         return ret;
     }
 
-    private static String checkVoiceParts(List<VoicePart> voiceParts) {
-        if( voiceParts.size() != 4 ) {
-            return "Arrangement needs exactly four voice parts.";
+    private static List<VoicePart> sortVoiceParts(List<VoicePart> voiceParts) {
+        Map<String,VoicePart> partsByName = new HashMap<>();
+        for( VoicePart p : voiceParts ) {
+            partsByName.put(p.getName(), p);
         }
 
-        if( ! "Tenor".equals(voiceParts.get(0).getName())
-            || ! "Lead".equals(voiceParts.get(1).getName())
-            || ! "Baritone".equals(voiceParts.get(2).getName())
-            || ! "Bass".equals(voiceParts.get(3).getName()) ) {
-            return "Voice parts must be Tenor-Lead-Baritone-Bass, in this order.";
+        if( ! partsByName.keySet().equals(ALL_VOICEPARTS)) {
+            throw new RuntimeException("Error reading configuration file: Must have exactly one entry under voiceParts for each of Tenor, Lead, Baritone, and Bass, but found " + partsByName.keySet() + ".");
         }
 
-        return null;
+        List<VoicePart> sortedParts = new ArrayList<>();
+        sortedParts.add(partsByName.get("Tenor"));
+        sortedParts.add(partsByName.get("Lead"));
+        sortedParts.add(partsByName.get("Baritone"));
+        sortedParts.add(partsByName.get("Bass"));
+
+        return sortedParts;
     }
 
     public Scores getScores() {
