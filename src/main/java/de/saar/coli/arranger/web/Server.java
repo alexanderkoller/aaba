@@ -43,19 +43,26 @@ public class Server {
     }
 
     public void postIndex(Context ctx) {
-        try {
-            String arrangedAbc = arrange(ctx.formParam("input_abc"));
-            ctx.render("index.jte", Map.of("abc", arrangedAbc));
-//            ctx.result(arrangedFile.getAbsolutePath());
-        } catch (IOException e) {
+        try(AabaForm form =  AabaForm.parse(ctx)) {
+            try {
+                if( "".equals(form.input_abc())) {
+                    ctx.render("index.jte", Map.of("form", form, "error", "Please enter a song in ABC notation."));
+                } else {
+                    String arrangedAbc = arrange(form.input_abc());
+                    ctx.render("index.jte", Map.of("abc", arrangedAbc, "form", form));
+                }
+            } catch (IOException e) {
+                // This should never happen, we are not doing any I/O.
+            } catch (AbcParser.AbcParsingException e) {
+                e.printStackTrace();
+                ctx.render("index.jte", Map.of("form", form, "error", "ABC syntax error: " + e.getMessage()));
+            } catch (NoValidArrangementException e) {
+                e.printStackTrace();
+                ctx.render("index.jte", Map.of("form", form, "error", "Could not find a valid arrangement."));
+            }
+        } catch (FormValidationException e) {
             e.printStackTrace();
-            ctx.result("IOException!");
-        } catch (AbcParser.AbcParsingException e) {
-            e.printStackTrace();
-            ctx.result("Parsing exception!");
-        } catch (NoValidArrangementException e) {
-            e.printStackTrace();
-            ctx.result("Arranging exception!");
+            ctx.render("index.jte", Map.of("error", "Please enter a song in ABC format."));
         }
     }
 
@@ -70,16 +77,6 @@ public class Server {
             AbcWriter abcw = new AbcWriter(config);
             StringWriter w = new StringWriter();
             abcw.write(bestArrangedScore, w);
-
-
-//            File file = File.createTempFile("aaba", ".abc");
-//            file.deleteOnExit();
-//            FileWriter fw = new FileWriter(file);
-//            abcw.write(bestArrangedScore, fw);
-//            fw.flush();
-//            fw.close();
-//
-//            System.err.println("Written to " + file.getAbsolutePath());
             return w.toString();
         }
     }

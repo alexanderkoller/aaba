@@ -1,16 +1,19 @@
 
+@import de.saar.coli.arranger.web.*
+
 @param String abc
+@param String error
+@param AabaForm form
 
 <html>
-    <head>
+    <head  lang="en">
         <title>Alexander's Automatic Barbershop Arranger (AABA)</title>
+        <meta charset="UTF-8">
 
-        <script src="http://moinejf.free.fr/js/abcweb-1.js"></script>
-        <script src="http://moinejf.free.fr/js/js/snd-1.js"></script>
-        <script src="http://moinejf.free.fr/js/js/follow-1.js"></script>
-        <style type="text/css">
-        	svg {display:block}
-        </style>
+        <!-- include $ABC_UI to render ABC -->
+        <!-- http://dev.music.free.fr/web-demo/$ABC_UI.html -->
+        <link rel="stylesheet" href="http://dev.music.free.fr/css/music.min.css" />
+        <script src="http://dev.music.free.fr/js/abc-ui-1.0.0.min.js"></script>
     </head>
     <body>
         <h1>Alexander's Automatic Barbershop Arranger (AABA)</h1>
@@ -19,17 +22,27 @@
         click "Submit". After a few moments, you will see an elementary barbershop
         arrangement of your music below.</p>
 
+        <p>See <a href="https://github.com/alexanderkoller/aaba">the documentation on Github</a>
+        for details on how to enter the song that you want to arrange.</p>
+
+        @if( error != null )
+        <p style="color:red">Error: ${error}</p>
+        @endif
+
         <form action="/" method="post">
-            <p><textarea name="input_abc" rows="10" cols="80"></textarea></p>
+            <p><textarea name="input_abc" rows="10" cols="80">@if(form != null)${form.input_abc()}@endif</textarea></p>
             <input type="submit" name="submit" />
         </form>
 
         <hr/>
 
 @if( abc == null )
-(placeholder)
+(This is where the arrangement will be shown.)
 @else
-${abc}
+<div class="abc-source">${abc}</div>
+<script>
+  $ABC_UI.init();
+</script>
 @endif
 
     </body>

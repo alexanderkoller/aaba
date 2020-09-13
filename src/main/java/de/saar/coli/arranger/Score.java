@@ -17,6 +17,7 @@ public class Score {
     private String title;
     private String composer;
     private int quartersPerMeasure;
+    private String tempo = null;
     private List<Pair<Integer,Chord>> chords = new ArrayList<>();
     private List<String> lyrics = new ArrayList<>();
 
@@ -142,6 +143,19 @@ public class Score {
     }
 
     /**
+     * Returns the tempo of the song, as per the "Q:" field in the ABC notation.
+     *
+     * @return
+     */
+    public String getTempo() {
+        return tempo;
+    }
+
+    public void setTempo(String tempo) {
+        this.tempo = tempo;
+    }
+
+    /**
      * Adds a chord at the end of this score.
      * The "startTime" is the time in 1/8 notes since
      * the beginning of the score at which this chord
@@ -204,6 +218,10 @@ public class Score {
         ret.setKey(getKey());
         ret.setQuartersPerMeasure(getQuartersPerMeasure());
         ret.lyrics = new ArrayList<>(lyrics);
+
+        if( tempo != null ) {
+            ret.setTempo(tempo);
+        }
 
         for (Pair<Integer, Chord> chord : chords) {
             ret.addChord(chord.getLeft(), chord.getRight());

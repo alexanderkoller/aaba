@@ -45,6 +45,7 @@ public class AbcWriter {
         bindings.put("key", score.getKey());
         bindings.put("timesig", Integer.toString(score.getQuartersPerMeasure()) + "/4");
         bindings.put("lyrics", String.join(" ", score.getLyrics()));
+        bindings.put("tempo", score.getTempo());
 
         Key key = Key.lookup(score.getKey());
 

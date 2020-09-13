@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * but makes the following assumptions:
  * <ul>
  *     <li>The song has a single voice.</li>
- *     <li>Only T, C, K, and M codes are read; all others are ignored. The K: field must come before all notes.</li>
+ *     <li>Only T, C, K, Q, and M codes are read; all others are ignored. The K: field must come before all notes.</li>
  *     <li>The L: code (base unit of time) is assumed to be 1/8 notes.</li>
  *     <li>Every note must have an explicit duration (in 1/8 notes).</li>
  *     <li>Adjacent notes are separated by whitespace.</li>
@@ -68,6 +68,9 @@ public class AbcParser {
                         break;
                     case "M":
                         score.setQuartersPerMeasure(Integer.parseInt(value.substring(0, 1)));
+                        break;
+                    case "Q":
+                        score.setTempo(value);
                         break;
 
                     case "w":
