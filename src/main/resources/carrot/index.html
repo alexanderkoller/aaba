@@ -33,7 +33,7 @@
 {% if original_abc == null %}
 (This is where the original song you typed in will be shown.)
 {% else %}
-<p>Note: For <a href="https://github.com/alexanderkoller/aaba/issues/5">technical reasons</a>, the song is shown an octave too low. </p>
+<p>Note: For <a href="https://github.com/alexanderkoller/aaba/issues/5">technical reasons</a>, the song is shown an octave lower than you actually entered it. </p>
 <div class="abc-source">{{ original_abc }}</div>
 {% endif %}
 
@@ -46,9 +46,6 @@
 {% else %}
 <p>This arrangement has a score of {{ meta.getScore() }} and was computed in {{ meta.getRuntimeNs()/1000000 }}ms.</p>
 <div class="abc-source">{{ abc }}</div>
-<script>
-    $ABC_UI.init();
-</script>
 {% endif %}
 
 {% if abc != null || original_abc != null %}
