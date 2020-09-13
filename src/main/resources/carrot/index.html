@@ -12,8 +12,8 @@
 <body>
 <h1>Alexander's Automatic Barbershop Arranger (AABA)</h1>
 
-<p>Welcome to AABA! Please enter a song below, in ABC format, and
-    click "Submit". After a few moments, you will see an elementary barbershop
+<p>Welcome to AABA! Please enter a song below, in ABC format, or try out the
+    example that is already filled in. After clicking "Submit", you will see a basic barbershop
     arrangement of your music below.</p>
 
 <p>See <a href="https://github.com/alexanderkoller/aaba">the documentation on Github</a>
@@ -22,7 +22,7 @@
 {% if error != null %}<p style="color:red">Error: {{ error }}</p>{% endif %}
 
 <form action="/" method="post">
-    <p><textarea name="input_abc" rows="10" cols="80">{% if form != null %}{{ form.input_abc() }}{% endif %}</textarea></p>
+    <p><textarea name="input_abc" rows="10" cols="120">{% if form != null %}{{ form.input_abc() }}{% endif %}</textarea></p>
     <input type="submit" name="submit" />
 </form>
 

@@ -6,10 +6,7 @@ import au.com.codeka.carrot.Configuration;
 import au.com.codeka.carrot.bindings.MapBindings;
 import au.com.codeka.carrot.resource.MemoryResourceLocator;
 import au.com.codeka.carrot.resource.ResourceLocator;
-import de.saar.coli.arranger.Arrange;
-import de.saar.coli.arranger.Arrangement;
-import de.saar.coli.arranger.Config;
-import de.saar.coli.arranger.Score;
+import de.saar.coli.arranger.*;
 import de.saar.coli.arranger.abc.AbcParser;
 import de.saar.coli.arranger.abc.AbcWriter;
 import io.javalin.Javalin;
@@ -70,7 +67,9 @@ public class Server {
     }
 
     public void getIndex(Context ctx) {
-        ctx.html(renderIndex(Map.of()));
+        AabaForm form = new AabaForm();
+        form.setInput_abc(Util.slurp(new InputStreamReader(getClass().getResourceAsStream("/down_our_way.abc"))));
+        ctx.html(renderIndex(Map.of("form", form)));
     }
 
     public void postIndex(Context ctx) {
