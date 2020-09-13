@@ -27,7 +27,13 @@ public class Server {
     }
 
     public void run() throws FileNotFoundException {
-        Javalin app = Javalin.create().start(7000);
+        int port = 7000;
+
+        if( System.getenv("PORT") != null ) {
+            port = Integer.parseInt(System.getenv("PORT"));
+        }
+
+        Javalin app = Javalin.create().start(port);
 
         app.get("/", ctx -> {
             getIndex(ctx);
