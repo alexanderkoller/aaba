@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"de.saar.coli.arranger"},{"l":"de.saar.coli.arranger.abc"},{"l":"de.saar.coli.arranger.rules"}]
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"de.saar.coli.arranger"},{"l":"de.saar.coli.arranger.abc"},{"l":"de.saar.coli.arranger.rules"},{"l":"de.saar.coli.arranger.web"}]

@@ -20,6 +20,14 @@ import java.util.Map;
 import static de.saar.coli.arranger.Arrange.loadConfig;
 import static de.saar.coli.arranger.Util.slurp;
 
+/**
+ * A web server for running AABA. It serves a single HTML page on which the user can
+ * enter the original melody and chords; these will be arranged and the result shown
+ * on the website.<p>
+ *
+ * The server runs on port 7000 by default. If you set the environment  variable PORT
+ * to some other number, the server will listen on that port instead.
+ */
 public class Server {
     private final Config config;
     private final CarrotEngine engine;

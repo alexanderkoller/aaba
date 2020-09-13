@@ -11,8 +11,22 @@ import java.util.*;
  *
  */
 public class Config {
+    /**
+     * Dialects of the ABC format which need to be distinguished by the
+     * {@link de.saar.coli.arranger.abc.AbcWriter}.
+     */
     public static enum ABC_DIALECT {
+        /**
+         * The default ABC 2.1 dialect. It is rendered correctly e.g. by EasyABC.
+         */
         STANDARD,
+
+        /**
+         * The ABC dialect which is rendered correctly by ABC2SVG and $ABC_UI.
+         * These renderers ignore the builtin transposition of the Tn/Ld staff, so
+         * we need to transpose the notes on that staff ourselves. They also do not
+         * understand the "snm" flag, so we do not produce it.
+         */
         ABC2SVG
     }
 
