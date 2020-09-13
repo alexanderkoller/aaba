@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'de.saar.coli'
-version '1.1-SNAPSHOT'
+version '1.2-SNAPSHOT'
 
 mainClassName = 'de.saar.coli.arranger.Arrange'
 
@@ -25,7 +25,6 @@ dependencies {
     compile 'org.yaml:snakeyaml:1.25'
 
     compile 'io.javalin:javalin:3.10.1'
-    compile 'gg.jte:jte:1.0.0'
     compile "org.slf4j:slf4j-simple:1.8.0-beta4"
 
     compile group: 'com.beust', name: 'jcommander', version: '1.78'
@@ -43,12 +42,14 @@ javadoc {
   }
 }
 
+// https://github.com/heroku/heroku-gradle
+// To deploy, run "./gradlew build deployHeroku"
 heroku {
     appName = "aaba-demo"
     jdkVersion = 11
-    includes = ["build/libs/aaba-1.1-SNAPSHOT-all.jar", "src/main/jte/index.jte"]
+    includes = ["build/libs/aaba-${version}-all.jar".toString(), "src/main/jte/index.jte"]
     includeBuildDir = false
     processTypes(
-            web: "java -cp build/libs/aaba-1.1-SNAPSHOT-all.jar de.saar.coli.arranger.web.Server"
+            web: "java -cp build/libs/aaba-${version}-all.jar de.saar.coli.arranger.web.Server".toString()
     )
 }

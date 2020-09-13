@@ -1,5 +1,11 @@
 package de.saar.coli.arranger.web;
 
+import au.com.codeka.carrot.CarrotEngine;
+import au.com.codeka.carrot.CarrotException;
+import au.com.codeka.carrot.Configuration;
+import au.com.codeka.carrot.bindings.MapBindings;
+import au.com.codeka.carrot.resource.MemoryResourceLocator;
+import au.com.codeka.carrot.resource.ResourceLocator;
 import de.saar.coli.arranger.Arrange;
 import de.saar.coli.arranger.Config;
 import de.saar.coli.arranger.Score;
@@ -12,9 +18,11 @@ import java.io.*;
 import java.util.Map;
 
 import static de.saar.coli.arranger.Arrange.loadConfig;
+import static de.saar.coli.arranger.Util.slurp;
 
 public class Server {
     private final Config config;
+    private final CarrotEngine engine;
 
     public static void main(String[] args) throws FileNotFoundException {
         Server x = new Server();
@@ -24,6 +32,10 @@ public class Server {
     public Server() throws FileNotFoundException {
         config = loadConfig(null);
         config.setAbcDialect(Config.ABC_DIALECT.ABC2SVG);
+
+        engine = new CarrotEngine(new Configuration.Builder()
+                .setResourceLocator(makeResourceLocator())
+                .build());
     }
 
     public void run() throws FileNotFoundException {
@@ -47,30 +59,39 @@ public class Server {
     }
 
     public void getIndex(Context ctx) {
-        ctx.render("index.jte");
+        ctx.html(renderIndex(Map.of()));
     }
 
     public void postIndex(Context ctx) {
         try(AabaForm form =  AabaForm.parse(ctx)) {
             try {
                 if( "".equals(form.input_abc())) {
-                    ctx.render("index.jte", Map.of("form", form, "error", "Please enter a song in ABC notation."));
+                    ctx.html(renderIndex(Map.of("form", form, "error", "Please enter a song in ABC notation.")));
                 } else {
                     String arrangedAbc = arrange(form.input_abc());
-                    ctx.render("index.jte", Map.of("abc", arrangedAbc, "form", form));
+                    ctx.html(renderIndex(Map.of("abc", arrangedAbc, "form", form)));
                 }
             } catch (IOException e) {
                 // This should never happen, we are not doing any I/O.
             } catch (AbcParser.AbcParsingException e) {
                 e.printStackTrace();
-                ctx.render("index.jte", Map.of("form", form, "error", "ABC syntax error: " + e.getMessage()));
+                ctx.html(renderIndex(Map.of("form", form, "error", "ABC syntax error: " + e.getMessage())));
             } catch (NoValidArrangementException e) {
                 e.printStackTrace();
-                ctx.render("index.jte", Map.of("form", form, "error", "Could not find a valid arrangement."));
+                ctx.html(renderIndex(Map.of("form", form, "error", "Could not find a valid arrangement.")));
             }
         } catch (FormValidationException e) {
             e.printStackTrace();
-            ctx.render("index.jte", Map.of("error", "Please enter a song in ABC format."));
+            ctx.html(renderIndex(Map.of("error", "Please enter a song in ABC format.")));
+        }
+    }
+
+    private String renderIndex(Map<String,Object> parameters) {
+        try {
+            return engine.process("index.html", new MapBindings(parameters));
+        } catch (CarrotException e) {
+            e.printStackTrace();
+            return "(rendering exception: " + e + ")";
         }
     }
 
@@ -87,5 +108,11 @@ public class Server {
             abcw.write(bestArrangedScore, w);
             return w.toString();
         }
+    }
+
+    private ResourceLocator.Builder makeResourceLocator() {
+        MemoryResourceLocator.Builder ret = new MemoryResourceLocator.Builder();
+        ret.add("index.html", slurp("/carrot/index.html"));
+        return ret;
     }
 }

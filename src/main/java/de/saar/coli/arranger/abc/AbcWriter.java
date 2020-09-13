@@ -155,35 +155,9 @@ public class AbcWriter {
 
     private ResourceLocator.Builder makeResourceLocator() {
         MemoryResourceLocator.Builder ret = new MemoryResourceLocator.Builder();
-        ret.add("template.abc", slurp("/template.abc"));
-        ret.add("abc2svg.abc", slurp("/abc2svg.abc"));
+        ret.add("template.abc", Util.slurp("/carrot/template.abc"));
+        ret.add("abc2svg.abc", Util.slurp("/carrot/abc2svg.abc"));
         return ret;
     }
 
-    private static String slurp(String resourceName) {
-        Reader r = new InputStreamReader(AbcWriter.class.getResourceAsStream(resourceName));
-        return slurp(r);
-    }
-
-    /**
-     * Reads the entire Reader into a string and returns it.
-     *
-     * @param reader
-     * @return
-     */
-    private static String slurp(Reader reader) {
-        try {
-            char[] arr = new char[8 * 1024];
-            StringBuilder buffer = new StringBuilder();
-            int numCharsRead;
-            while ((numCharsRead = reader.read(arr, 0, arr.length)) != -1) {
-                buffer.append(arr, 0, numCharsRead);
-            }
-            reader.close();
-
-            return buffer.toString();
-        } catch (IOException e) {
-            return null;
-        }
-    }
 }

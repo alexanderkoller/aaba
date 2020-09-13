@@ -12,10 +12,14 @@ It might then produce the following arrangement, which is close but not identica
 
 Arguably, some voicing decisions that AABA made are not optimal, e.g. the bass should be on the low Bb on "Down". This is because not many rules are currently implemented regarding good voicing and voice leading decisions, and the weights of these rules are probably not ideal yet. If you would like to contribute your knowledge of arranging, or if you would like to contribute some of your own arrangements so we can let the computer learn rule weights through statistical analysis, please [get in touch](http://www.coli.uni-saarland.de/~koller/)!
 
+## Web demo
+
+The easiest way to try out AABA is through the [web demo](https://aaba-demo.herokuapp.com/), which will display the arrangement on a website and let you play it back.
+
 
 ## Running AABA
 
-You will need a recent version of [Java](https://www.java.com) to run AABA.
+If you want to compile AABA yourself, e.g. to run it on your local computer, you will need a recent version of [Java](https://www.java.com).
 
 Download the most [recent release](https://github.com/alexanderkoller/aaba/releases) of AABA, or build it yourself from the current sources.
 
