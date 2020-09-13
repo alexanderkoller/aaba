@@ -47,7 +47,7 @@ javadoc {
 heroku {
     appName = "aaba-demo"
     jdkVersion = 11
-    includes = ["build/libs/aaba-${version}-all.jar".toString(), "src/main/jte/index.jte"]
+    includes = ["build/libs/aaba-${version}-all.jar".toString()]
     includeBuildDir = false
     processTypes(
             web: "java -cp build/libs/aaba-${version}-all.jar de.saar.coli.arranger.web.Server".toString()
