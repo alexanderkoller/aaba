@@ -12,8 +12,8 @@
 
         <!-- include $ABC_UI to render ABC -->
         <!-- http://dev.music.free.fr/web-demo/$ABC_UI.html -->
-        <link rel="stylesheet" href="http://dev.music.free.fr/css/music.min.css" />
-        <script src="http://dev.music.free.fr/js/abc-ui-1.0.0.min.js"></script>
+        <link rel="stylesheet" href="music.min.css" />
+        <script src="abc-ui-1.0.0.min.js"></script>
     </head>
     <body>
         <h1>Alexander's Automatic Barbershop Arranger (AABA)</h1>

@@ -33,7 +33,9 @@ public class Server {
             port = Integer.parseInt(System.getenv("PORT"));
         }
 
-        Javalin app = Javalin.create().start(port);
+        Javalin app = Javalin.create(config -> {
+            config.addStaticFiles("/static");
+        }).start(port);
 
         app.get("/", ctx -> {
             getIndex(ctx);
