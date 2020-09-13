@@ -11,10 +11,17 @@ import java.util.*;
  *
  */
 public class Config {
+    public static enum ABC_DIALECT {
+        STANDARD,
+        ABC2SVG
+    }
+
     private String arranger;
     private Scores scores;
     private List<VoicePart> voiceParts;
     private List<Clef> clefs;
+    private ABC_DIALECT abcDialect = ABC_DIALECT.STANDARD;
+
     private static final Set<String> ALL_VOICEPARTS = new HashSet<>(List.of("Tenor", "Lead", "Baritone", "Bass"));
 
     public static Config read(Reader configReader) {
@@ -79,6 +86,14 @@ public class Config {
 
     public void setClefs(List<Clef> clefs) {
         this.clefs = clefs;
+    }
+
+    public ABC_DIALECT getAbcDialect() {
+        return abcDialect;
+    }
+
+    public void setAbcDialect(ABC_DIALECT abcDialect) {
+        this.abcDialect = abcDialect;
     }
 
     public static class Scores {

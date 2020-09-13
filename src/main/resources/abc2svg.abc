@@ -1,0 +1,22 @@
+%abc-2.1
+X:1
+T:{{ title }}
+C:{{ composer }}
+M:{{ timesig }}
+L:1/8
+K:{{ key }}
+V:Tn {{ clefspec[0] }} name="Tn"
+V:Ld {{ clefspec[0] }} name="Ld"
+V:Br {{ clefspec[1] }} name="Br"
+V:Bs {{ clefspec[1] }} name="Bs"
+%%score (Tn Ld) (Br Bs)
+V:Tn
+  {{ Tn }}
+V:Ld
+  {{ Ld }}
+w: {{ lyrics }}
+V:Br
+  {{ Br }}
+V:Bs
+  {{ Bs }}
+

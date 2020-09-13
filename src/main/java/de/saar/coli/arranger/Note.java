@@ -243,6 +243,17 @@ public class Note {
         return NOTE_NAMES.indexOf(noteName);
     }
 
+    /**
+     * Transposes this note up or down the given number of half-steps.
+     *
+     * @param halfsteps
+     * @return
+     */
+    public Note transpose(int halfsteps) {
+        Note ret = Note.create(midiNumber + halfsteps, duration);
+        return ret;
+    }
+
     @Override
     public String toString() {
         return getNoteName(getRelativeNote()) + getOctave() + ":" + duration;

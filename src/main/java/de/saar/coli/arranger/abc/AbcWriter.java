@@ -55,6 +55,11 @@ public class AbcWriter {
             int timeInMeasure = 0;
 
             for (Note note : part) {
+                // ABC2SVG does not respect the built-in transposition of the upper clef,
+                // so we have to do it by hand.
+                if( i <= 1 && config.getAbcDialect() == Config.ABC_DIALECT.ABC2SVG ) {
+                    note = note.transpose(12);
+                }
                 Chord currentChord = score.getChordAtTime(timeSinceStart);
 
                 buf.append(" ");
@@ -79,8 +84,16 @@ public class AbcWriter {
         }
         bindings.put("clefspec", clefspec);
 
+        // look up template filename for the given ABC dialect
+        String abcTemplateResourceName;
+        switch(config.getAbcDialect()) {
+            case ABC2SVG: abcTemplateResourceName = "abc2svg.abc"; break;
+            default: abcTemplateResourceName = "template.abc";
+        }
+
+        // render ABC using the given template
         try {
-            String abc = engine.process("template.abc", new MapBindings(bindings));
+            String abc = engine.process(abcTemplateResourceName, new MapBindings(bindings));
             writer.write(abc);
         } catch (CarrotException e) {
             throw new IllegalArgumentException(e);
@@ -102,11 +115,9 @@ public class AbcWriter {
             // note exists in key of current chord, use chord key's accidental
             // (only if chord is available in score)
             n = note.getNoteName(chordKey, true);
-//            System.err.printf("%s in chord key %s -> spell as %s\n", Note.getNoteName(note.getRelativeNote()), chordKey, n);
         } else {
             // note exists in neither, use fallback tactics for key
             n = note.getNoteName(key);
-//            System.err.printf("%s fallback spell as %s (chord key was %s)\n", Note.getNoteName(note.getRelativeNote()), n, chordKey);
         }
 
         // convert standard spelling of accidentals to ABC notation
@@ -144,6 +155,7 @@ public class AbcWriter {
     private ResourceLocator.Builder makeResourceLocator() {
         MemoryResourceLocator.Builder ret = new MemoryResourceLocator.Builder();
         ret.add("template.abc", slurp("/template.abc"));
+        ret.add("abc2svg.abc", slurp("/abc2svg.abc"));
         return ret;
     }
 
