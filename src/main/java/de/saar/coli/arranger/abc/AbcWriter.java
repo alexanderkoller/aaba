@@ -160,4 +160,10 @@ public class AbcWriter {
         return ret;
     }
 
+    public String asString(Score score) throws IOException {
+        StringWriter w = new StringWriter();
+        write(score, w);
+        return w.toString();
+    }
+
 }

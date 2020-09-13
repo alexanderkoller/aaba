@@ -58,14 +58,14 @@ public class Arrange {
 
         Score score = new AbcParser().read(new FileReader(arguments.inputFilename));
         Arrange arranger = new Arrange(config);
-        Score bestArrangedScore = arranger.arrange(score);
+        Arrangement bestArrangement = arranger.arrange(score);
 
-        if( bestArrangedScore == null ) {
+        if( bestArrangement == null ) {
             System.out.println("Could not find a valid arrangement.");
         } else {
             AbcWriter abcw = new AbcWriter(config);
             FileWriter fw = new FileWriter(arguments.outputFilename);
-            abcw.write(bestArrangedScore, fw);
+            abcw.write(bestArrangement.getArrangement(), fw);
             fw.flush();
             fw.close();
         }
@@ -81,7 +81,8 @@ public class Arrange {
         }
     }
 
-    public Score arrange(Score score) {
+    public Arrangement arrange(Score score) {
+        long startTime = System.nanoTime();
         int n = score.countNotes(VoicePart.LEAD);
         List<List<List<Note>>> possibleNotes = computePossibleNotes(score);
         Map<Item, Integer> bestScores = new HashMap<>();
@@ -151,7 +152,8 @@ public class Arrange {
             System.out.printf("Best arrangement has score %d.\n", bestGoalItem.getValue());
 
             Score bestArrangedScore = extractBestScore(bestGoalItem.getKey(), backpointers, score);
-            return bestArrangedScore;
+
+            return new Arrangement(bestArrangedScore, score, bestGoalItem.getValue(), System.nanoTime()-startTime);
         }
     }
 

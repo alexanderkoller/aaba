@@ -7,6 +7,7 @@ import au.com.codeka.carrot.bindings.MapBindings;
 import au.com.codeka.carrot.resource.MemoryResourceLocator;
 import au.com.codeka.carrot.resource.ResourceLocator;
 import de.saar.coli.arranger.Arrange;
+import de.saar.coli.arranger.Arrangement;
 import de.saar.coli.arranger.Config;
 import de.saar.coli.arranger.Score;
 import de.saar.coli.arranger.abc.AbcParser;
@@ -31,6 +32,7 @@ import static de.saar.coli.arranger.Util.slurp;
 public class Server {
     private final Config config;
     private final CarrotEngine engine;
+    private final AbcWriter abcw;
 
     public static void main(String[] args) throws FileNotFoundException {
         Server x = new Server();
@@ -40,6 +42,7 @@ public class Server {
     public Server() throws FileNotFoundException {
         config = loadConfig(null);
         config.setAbcDialect(Config.ABC_DIALECT.ABC2SVG);
+        abcw = new AbcWriter(config);
 
         engine = new CarrotEngine(new Configuration.Builder()
                 .setResourceLocator(makeResourceLocator())
@@ -76,8 +79,8 @@ public class Server {
                 if( "".equals(form.input_abc())) {
                     ctx.html(renderIndex(Map.of("form", form, "error", "Please enter a song in ABC notation.")));
                 } else {
-                    String arrangedAbc = arrange(form.input_abc());
-                    ctx.html(renderIndex(Map.of("abc", arrangedAbc, "form", form)));
+                    Arrangement arrangement = arrange(form.input_abc());
+                    ctx.html(renderIndex(Map.of("abc", abcw.asString(arrangement.getArrangement()), "form", form, "original_abc", form.input_abc(), "meta", arrangement)));
                 }
             } catch (IOException e) {
                 // This should never happen, we are not doing any I/O.
@@ -86,7 +89,7 @@ public class Server {
                 ctx.html(renderIndex(Map.of("form", form, "error", "ABC syntax error: " + e.getMessage())));
             } catch (NoValidArrangementException e) {
                 e.printStackTrace();
-                ctx.html(renderIndex(Map.of("form", form, "error", "Could not find a valid arrangement.")));
+                ctx.html(renderIndex(Map.of("form", form, "original_abc", form.input_abc(), "error", "Could not find a valid arrangement.")));
             }
         } catch (FormValidationException e) {
             e.printStackTrace();
@@ -103,18 +106,16 @@ public class Server {
         }
     }
 
-    private String arrange(String abcString) throws IOException, AbcParser.AbcParsingException, NoValidArrangementException {
+    private Arrangement arrange(String abcString) throws IOException, AbcParser.AbcParsingException, NoValidArrangementException {
         Score score = new AbcParser().read(new StringReader(abcString));
-        Arrange arranger = new Arrange(config);
-        Score bestArrangedScore = arranger.arrange(score);
 
-        if( bestArrangedScore == null ) {
+        Arrange arranger = new Arrange(config);
+        Arrangement arrangement = arranger.arrange(score);
+
+        if( arrangement == null ) {
             throw new NoValidArrangementException();
         } else {
-            AbcWriter abcw = new AbcWriter(config);
-            StringWriter w = new StringWriter();
-            abcw.write(bestArrangedScore, w);
-            return w.toString();
+            return arrangement;
         }
     }
 
