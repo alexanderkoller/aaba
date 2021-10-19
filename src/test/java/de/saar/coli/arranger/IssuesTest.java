@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 public class IssuesTest {
-    @Test
+//    @Test
     public void testIssue7() throws AbcParser.AbcParsingException, IOException {
         Score score = new AbcParser().read(new InputStreamReader(this.getClass().getResourceAsStream("/issue7.abc")));
     }

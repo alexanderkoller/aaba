@@ -150,7 +150,9 @@ public class Chord {
      */
     public static Chord lookup(String chordName) {
         ChordType type = chordTypeBySuffix(chordName);
+//        System.err.printf("type: %s\n", type); // debugging #7
         String root = chordName.substring(0, chordName.length()-type.name.length());
+//        System.err.printf("root: %s\n", root); // debugging #7
         return lookup(root, type);
     }
 
@@ -242,6 +244,7 @@ public class Chord {
 
     @Override
     public String toString() {
+//        System.err.printf("root: %d, type: %s\n", root, type.name); // debugging #7
         return Note.getNoteName(root) + type.name;
     }
 }

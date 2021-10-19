@@ -8,6 +8,7 @@ import de.saar.coli.arranger.Score;
 import javax.annotation.processing.Filer;
 import java.io.*;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -84,8 +85,12 @@ public class AbcParser {
                 List<Note> leadPart = score.getPart(1);
                 String[] potentialNotes = line.split("\\s+");
 
+//                System.err.println(Arrays.toString(potentialNotes)); // debugging #7
+
                 for (String pn : potentialNotes) {
-                    if (pn.startsWith("|")) {
+                    if( pn.isEmpty() ) {
+                        continue;
+                    } else if (pn.startsWith("|")) {
                         // skip barlines
                     } else if( pn.startsWith("\"")) {
                         // chord
@@ -96,6 +101,7 @@ public class AbcParser {
                         score.addChord(timeInEighths, chord);
                     } else {
                         // note
+//                        System.err.printf("read note: [%s]\n", pn);  // debugging #7
                         Note note = parseAbcNote(pn, key);
                         leadPart.add(note);
                         timeInEighths += note.getDuration();
@@ -108,8 +114,11 @@ public class AbcParser {
     }
 
     private Chord parseAbcChord(String chord) {
+//        System.err.printf("parse chord: %s\n", chord); // debugging #7
         chord = chord.substring(1, chord.length()-1);
-        return Chord.lookup(chord);
+        Chord ret = Chord.lookup(chord);
+//        System.err.printf("root: %d\n", ret.getRoot()); // debugging #7
+        return ret;
     }
 
     // TODO - add accidentals as defined by key
@@ -140,13 +149,13 @@ public class AbcParser {
         int octave = 0;
         if (Character.isUpperCase(relativeNote.charAt(0))) {
             octave = 4;
-            while (note.charAt(pos) == ',') {
+            while (pos < note.length() && note.charAt(pos) == ',') {
                 octave--;
                 pos++;
             }
         } else {
             octave = 5;
-            while (note.charAt(pos) == '\'') {
+            while (pos < note.length() && note.charAt(pos) == '\'') {
                 octave++;
                 pos++;
             }
@@ -155,13 +164,19 @@ public class AbcParser {
         // parse duration
         int duration;
         try {
-            duration = Integer.parseInt(note.substring(pos, pos + 1));
+            if( pos >= note.length() ) { // note is over
+                duration = 1;
+            } else {
+                duration = Integer.parseInt(note.substring(pos, pos + 1));
+            }
         } catch(NumberFormatException e) {
             throw new AbcParsingException("Could not parse ABC note: " + note, e);
         }
 
         Note ret = Note.create(relativeNote.toUpperCase(), octave, duration);
-        return ret.add(accidentalOffset);
+        ret = ret.add(accidentalOffset);
+//        System.err.printf("%s -> %s\n", note, ret); // debugging #7
+        return ret;
     }
 
     public static class AbcParsingException extends Exception {

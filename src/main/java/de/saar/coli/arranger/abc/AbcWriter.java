@@ -104,6 +104,8 @@ public class AbcWriter {
     private String abcNote(Note note, Key key, Chord currentChord) {
         String n = null;
         StringBuilder buf = new StringBuilder();
+//        System.err.println(currentChord); // debugging #7
+//        System.err.println(currentChord.getKey()); // debugging #7
         Key chordKey = currentChord == null ? null : currentChord.getKey();
 
         // get note name with accidentals, in standard spelling
