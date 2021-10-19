@@ -1,0 +1,17 @@
+X:1
+T:Title
+%%scale 0.83
+%%pagewidth 21.01cm
+%%leftmargin 1.00cm
+%%rightmargin 1.00cm
+L:1/8
+M:4/4
+I:linebreak $
+K:C
+V:1 treble nm="Piano" snm="Pno."
+V:1
+ z6 z"C" C- | CCA,G,"C7" CCA,G, |"G7" D"Gm7b5"^C-C"G7"D- D3 D- | DDA,G, DDA,G, | %4
+"C" CA,-A,G,- G,3"C7" C- |$ CCA,G, CCA,G, |"G7" D"Gm7b5"^C-C"G7"D- D3"Em" E |"D7" ^FEDE"G7" =FEDE | %8
+"C" C8 | z8 | z8 | z8 | z8 | z8 |$ z8 | z8 | z8 | z8 | z8 | z8 | z8 | z8 | z8 | z8 | z8 | z8 | z8 | %27
+ z8 | z8 | z8 | z8 | z8 |] %32
+
