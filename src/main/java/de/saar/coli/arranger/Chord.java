@@ -142,6 +142,30 @@ public class Chord {
         return chord;
     }
 
+
+    private static final String[][] EQUIVALENT_CHORD_TYPES = new String[][] {
+            // make sure that the ordering is safe for suffixes, i.e. no earlier left chord
+            // is a suffix of a later left chord; they are checked in order
+            new String[] { "m7b5", "x7" }
+    };
+
+    /**
+     * Rewrite alternative chord names into chord names that are supported
+     * by aaba.
+     *
+     * @param chordName
+     * @return
+     */
+    private static String normalizeChordTypes(String chordName) {
+        for( String[] replacementPair : EQUIVALENT_CHORD_TYPES ) {
+            if( chordName.endsWith(replacementPair[0])) {
+                return chordName.substring(0, chordName.length()-replacementPair[0].length()) + replacementPair[1];
+            }
+        }
+
+        return chordName;
+    }
+
     /**
      * Looks up a chord based on its name, such as "Cmj7".
      *
@@ -149,6 +173,7 @@ public class Chord {
      * @return
      */
     public static Chord lookup(String chordName) {
+        chordName = normalizeChordTypes(chordName);
         ChordType type = chordTypeBySuffix(chordName);
 //        System.err.printf("type: %s\n", type); // debugging #7
         String root = chordName.substring(0, chordName.length()-type.name.length());
