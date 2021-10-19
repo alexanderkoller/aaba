@@ -4,6 +4,11 @@ import de.saar.coli.arranger.Chord;
 import de.saar.coli.arranger.Key;
 import de.saar.coli.arranger.Note;
 import de.saar.coli.arranger.Score;
+import de.saar.coli.arranger.abc.AbcNotationLexer;
+import de.saar.coli.arranger.abc.AbcNotationParser;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.Trees;
 
 import javax.annotation.processing.Filer;
 import java.io.*;
@@ -197,6 +202,41 @@ public class AbcParser {
 
         public AbcParsingException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
             super(message, cause, enableSuppression, writableStackTrace);
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        AbcNotationLexer lexer = new AbcNotationLexer(CharStreams.fromFileName("issue7-nopiano.abc"));
+        for(Token tok : lexer.getAllTokens()) {
+            System.err.printf("[%s] %s\n", lexer.getVocabulary().getSymbolicName(tok.getType()), tok);
+        }
+
+//        System.err.println(lexer.getAllTokens());
+        lexer = new AbcNotationLexer(CharStreams.fromFileName("issue7-nopiano.abc"));
+        AbcNotationParser parser = new AbcNotationParser(new CommonTokenStream(lexer));
+        System.err.println(printSyntaxTree(parser, parser.tune()));
+//        System.err.println(parser.tune());
+    }
+
+
+    public static String printSyntaxTree(Parser parser, ParseTree root) {
+        StringBuilder buf = new StringBuilder();
+        recursive(root, buf, 0, Arrays.asList(parser.getRuleNames()));
+        return buf.toString();
+    }
+
+    private static void recursive(ParseTree aRoot, StringBuilder buf, int offset, List<String> ruleNames) {
+        for (int i = 0; i < offset; i++) {
+            buf.append("  ");
+        }
+        buf.append(Trees.getNodeText(aRoot, ruleNames)).append("\n");
+        if (aRoot instanceof ParserRuleContext) {
+            ParserRuleContext prc = (ParserRuleContext) aRoot;
+            if (prc.children != null) {
+                for (ParseTree child : prc.children) {
+                    recursive(child, buf, offset + 1, ruleNames);
+                }
+            }
         }
     }
 }
