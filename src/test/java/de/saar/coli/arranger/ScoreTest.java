@@ -4,6 +4,7 @@ import de.saar.coli.arranger.abc.AbcParser;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.List;
 
@@ -62,6 +63,13 @@ public class ScoreTest {
         assertNotEquals(Chord.lookup("C"), score.getChordAtTime(4));
         assertEquals(Chord.lookup("G7"), score.getChordAtTime(4));
         assertEquals(Chord.lookup("G7"), score.getChordAtTime(7));
+    }
+
+    @Test
+    public void testWords() throws AbcParser.AbcParsingException, IOException {
+        Score score = new AbcParser().read(new InputStreamReader(this.getClass().getResourceAsStream("/downourway.abc")));
+        assertEquals(25, score.getLyrics().size());
+        assertEquals("Down", score.getLyrics().get(0));
     }
 
     private static final String ABC =

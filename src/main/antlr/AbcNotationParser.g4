@@ -25,7 +25,7 @@ tune: header (voice)+ ;
 // voiceInfo example: V: left hand
 voice: (voiceInfo score*);
 voiceInfo: VoiceSymbol text=LINE LINE_MODE_EXIT;
-score:(bar suppresScoreLinebreak?)+ (NEWLINE | EOF);
+score:((bar suppresScoreLinebreak?) | line_of_words )+ (NEWLINE | EOF);
 // >---END OF TUNE
 
 // --->HEADER:
@@ -52,6 +52,8 @@ stringQuotation: Quotationmark string;
 integerTempo:    stringQuotation? speed=INT stringQuotation?;
 // >---END OF HEADER
 
+
+line_of_words: WordsSymbol text=LINE LINE_MODE_EXIT;
 
 // --->BAR:
 bar: space* (musicalExpression)+ endOfBar;

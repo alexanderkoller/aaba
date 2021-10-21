@@ -137,7 +137,7 @@ public class AbcParser {
 
         @Override
         public void enterTempo(AbcNotationParser.TempoContext ctx) {
-            score.setTempo(ctx.getText().trim());
+            score.setTempo(ctx.getText().substring(2).trim());
         }
 
         @Override
@@ -207,215 +207,16 @@ public class AbcParser {
         public void enterRest(AbcNotationParser.RestContext ctx) {
             System.err.println("rest");
         }
+
+        @Override
+        public void enterLine_of_words(AbcNotationParser.Line_of_wordsContext ctx) {
+            String line = ctx.LINE().getText().trim();
+            String[] words = line.split("\\s+");
+            for( String word : words ) {
+                score.addWord(word);
+            }
+        }
     }
 }
 
 
-
-//
-//
-//    private static Pattern LINE_PATTERN = Pattern.compile("\\s*(\\S+):\\s*(.+)");
-//
-//    /**
-//     * Reads a Score from a Reader.
-//     *
-//     * @param abcReader
-//     * @return
-//     * @throws IOException - an I/O error occurred
-//     * @throws AbcParsingException - something went wrong in parsing the ABC notation
-//     */
-//    public Score read(Reader abcReader) throws IOException, AbcParsingException {
-//        BufferedReader r = new BufferedReader(abcReader);
-//        Score score = new Score("", "", "", 4);
-//        String line;
-//        int timeInEighths = 0;
-//        Key key = Key.lookup("C");
-//
-//        while ((line = r.readLine()) != null) {
-//            Matcher m = LINE_PATTERN.matcher(line);
-//
-//            if( line.startsWith("%")) {
-//                // skip
-//            } else if (m.matches()) {
-//                String configKey = m.group(1);
-//                String value = m.group(2).trim();
-//
-//                switch (configKey) {
-//                    case "T":
-//                        score.setTitle(value);
-//                        break;
-//                    case "C":
-//                        score.setComposer(value);
-//                        break;
-//                    case "K":
-//                        score.setKey(value);
-//                        key = Key.lookup(value);
-//                        break;
-//                    case "M":
-//                        score.setQuartersPerMeasure(Integer.parseInt(value.substring(0, 1)));
-//                        break;
-//                    case "Q":
-//                        score.setTempo(value);
-//                        break;
-//
-//                    case "w":
-//                        String[] words = value.split("\\s+");
-//                        for( String word : words ) {
-//                            score.addWord(word);
-//                        }
-//                        break;
-//                }
-//            } else {
-//                List<Note> leadPart = score.getPart(1);
-//                String[] potentialNotes = line.split("\\s+");
-//
-////                System.err.println(Arrays.toString(potentialNotes)); // debugging #7
-//
-//                for (String pn : potentialNotes) {
-//                    if( pn.isEmpty() ) {
-//                        continue;
-//                    } else if (pn.startsWith("|")) {
-//                        // skip barlines
-//                    } else if( pn.startsWith("\"")) {
-//                        // chord
-//                        Chord chord = parseAbcChord(pn);
-//                        if( chord == null ) {
-//                            throw new AbcParsingException("Could not parse chord: " + pn);
-//                        }
-//                        score.addChord(timeInEighths, chord);
-//                    } else {
-//                        // note
-////                        System.err.printf("read note: [%s]\n", pn);  // debugging #7
-//                        Note note = parseAbcNote(pn, key);
-//                        leadPart.add(note);
-//                        timeInEighths += note.getDuration();
-//                    }
-//                }
-//            }
-//        }
-//
-//        return score;
-//    }
-//
-//    private Chord parseAbcChord(String chord) {
-////        System.err.printf("parse chord: %s\n", chord); // debugging #7
-//        chord = chord.substring(1, chord.length()-1);
-//        Chord ret = Chord.lookup(chord);
-////        System.err.printf("root: %d\n", ret.getRoot()); // debugging #7
-//        return ret;
-//    }
-//
-//    // TODO - add accidentals as defined by key
-//    private Note parseAbcNote(String note, Key key) throws AbcParsingException {
-//        int pos = 0;
-//        Character accidental = null;
-//        int accidentalOffset = 0;
-//
-//        // explicit accidentals
-//        if (note.charAt(pos) == '^' || note.charAt(pos) == '_' || note.charAt(pos) == '=') {
-//            accidental = note.charAt(pos++);
-//        }
-//
-//        // interpret note in current key
-//        String relativeNote = Character.toString(note.charAt(pos++));
-//        accidentalOffset = key.getAccidentalForNote(relativeNote);
-//
-//        // explicit accidentals overwrite the accidental offset
-//        if( accidental != null ) {
-//            switch(accidental) {
-//                case '^': accidentalOffset = +1; break;
-//                case '_': accidentalOffset = -1; break;
-//                case '=': accidentalOffset = 0; break;
-//            }
-//        }
-//
-//        // move note to correct octave
-//        int octave = 0;
-//        if (Character.isUpperCase(relativeNote.charAt(0))) {
-//            octave = 4;
-//            while (pos < note.length() && note.charAt(pos) == ',') {
-//                octave--;
-//                pos++;
-//            }
-//        } else {
-//            octave = 5;
-//            while (pos < note.length() && note.charAt(pos) == '\'') {
-//                octave++;
-//                pos++;
-//            }
-//        }
-//
-//        // parse duration
-//        int duration;
-//        try {
-//            if( pos >= note.length() ) { // note is over
-//                duration = 1;
-//            } else {
-//                duration = Integer.parseInt(note.substring(pos, pos + 1));
-//            }
-//        } catch(NumberFormatException e) {
-//            throw new AbcParsingException("Could not parse ABC note: " + note, e);
-//        }
-//
-//        Note ret = Note.create(relativeNote.toUpperCase(), octave, duration);
-//        ret = ret.add(accidentalOffset);
-////        System.err.printf("%s -> %s\n", note, ret); // debugging #7
-//        return ret;
-//    }
-
-
-
-
-//    public static void main(String[] args) throws IOException, AbcParsingException {
-//
-//
-////
-//        printParseTree("issue7-orig.abc");
-//        Score s = new AbcParser().readA(new FileReader("issue7-orig.abc"));
-//        System.err.println(s);
-//        Config config = loadConfig("aaba.yaml");
-//        FileWriter w = new FileWriter("x.abc");
-//        new AbcWriter(config).write(s, w);
-//        w.flush();
-//        w.close();
-//
-////
-////        AbcNotationLexer lexer = new AbcNotationLexer(CharStreams.fromFileName("issue7-orig.abc"));
-////        for(Token tok : lexer.getAllTokens()) {
-////            System.err.printf("[%s] %s\n", lexer.getVocabulary().getSymbolicName(tok.getType()), tok);
-////        }
-//////
-////////        System.err.println(lexer.getAllTokens());
-////        lexer = new AbcNotationLexer(CharStreams.fromFileName("issue7-orig.abc"));
-////        AbcNotationParser parser = new AbcNotationParser(new CommonTokenStream(lexer));
-////        System.err.println(printSyntaxTree(parser, parser.tune()));
-////////        System.err.println(parser.tune());
-//    }
-//
-//    private static void printParseTree(String filename) throws IOException {
-//        AbcNotationLexer lexer = new AbcNotationLexer(CharStreams.fromFileName(filename));
-//        AbcNotationParser parser = new AbcNotationParser(new CommonTokenStream(lexer));
-//        System.err.println(printSyntaxTree(parser, parser.tune()));
-//    }
-//
-//
-//    public static String printSyntaxTree(Parser parser, ParseTree root) {
-//        StringBuilder buf = new StringBuilder();
-//        recursive(root, buf, 0, Arrays.asList(parser.getRuleNames()));
-//        return buf.toString();
-//    }
-//
-//    private static void recursive(ParseTree aRoot, StringBuilder buf, int offset, List<String> ruleNames) {
-//        for (int i = 0; i < offset; i++) {
-//            buf.append("  ");
-//        }
-//        buf.append(Trees.getNodeText(aRoot, ruleNames)).append("\n");
-//        if (aRoot instanceof ParserRuleContext) {
-//            ParserRuleContext prc = (ParserRuleContext) aRoot;
-//            if (prc.children != null) {
-//                for (ParseTree child : prc.children) {
-//                    recursive(child, buf, offset + 1, ruleNames);
-//                }
-//            }
-//        }
-//    }

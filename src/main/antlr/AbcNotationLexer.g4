@@ -32,9 +32,11 @@ NotesSymbol:        'N:'  ->mode(STRING_MODE);
 VoiceSymbol:        'V:'  ->mode(LINE_MODE);
 ComposerSymbol:     'C:'  ->mode(STRING_MODE);
 TempoSymbol:        'Q:';
+WordsSymbol:        'w:'  ->mode(LINE_MODE);
+
 // skip all not supported symbols.
 // TODO: support more symbols.
-NotSupportedSymbol: [ABDFGHImOPRrSsUWwZ] ':' .*? NEWLINE ->skip;
+NotSupportedSymbol: [ABDFGHImOPRrSsUWZ] ':' .*? NEWLINE ->skip;
 
 
 // notes and other musical expressions:
