@@ -220,23 +220,29 @@ public class AbcParser {
     }
 
     public static void main(String[] args) throws IOException, AbcParsingException {
+
+
+//
         printParseTree("issue7-orig.abc");
         Score s = new AbcParser().readA(new FileReader("issue7-orig.abc"));
-//        System.err.println(s);
+        System.err.println(s);
         Config config = loadConfig("aaba.yaml");
-        new AbcWriter(config).write(s, new FileWriter("x.abc"));
+        FileWriter w = new FileWriter("x.abc");
+        new AbcWriter(config).write(s, w);
+        w.flush();
+        w.close();
 
-
-//        AbcNotationLexer lexer = new AbcNotationLexer(CharStreams.fromFileName("issue7-orig.abc"));
-////        for(Token tok : lexer.getAllTokens()) {
-////            System.err.printf("[%s] %s\n", lexer.getVocabulary().getSymbolicName(tok.getType()), tok);
-////        }
 //
-////        System.err.println(lexer.getAllTokens());
-////        lexer = new AbcNotationLexer(CharStreams.fromFileName("issue7-orig.abc"));
+//        AbcNotationLexer lexer = new AbcNotationLexer(CharStreams.fromFileName("issue7-orig.abc"));
+//        for(Token tok : lexer.getAllTokens()) {
+//            System.err.printf("[%s] %s\n", lexer.getVocabulary().getSymbolicName(tok.getType()), tok);
+//        }
+////
+//////        System.err.println(lexer.getAllTokens());
+//        lexer = new AbcNotationLexer(CharStreams.fromFileName("issue7-orig.abc"));
 //        AbcNotationParser parser = new AbcNotationParser(new CommonTokenStream(lexer));
 //        System.err.println(printSyntaxTree(parser, parser.tune()));
-////        System.err.println(parser.tune());
+//////        System.err.println(parser.tune());
     }
 
     private static void printParseTree(String filename) throws IOException {
@@ -283,14 +289,14 @@ public class AbcParser {
 
         @Override
         public void exitVoiceInfo(AbcNotationParser.VoiceInfoContext ctx) {
-            System.err.println(ctx.STRING().getText());
+//            System.err.println(ctx.LINE().getText());
             leadPart = score.getPart(1);
         }
 
         @Override
         public void enterTitle(AbcNotationParser.TitleContext ctx) {
-            String title = ctx.string().getText();
-            System.err.printf("TITLE: %s\n", title);
+            String title = ctx.string().getText().trim();
+//            System.err.printf("TITLE: %s\n", title);
             score.setTitle(title);
         }
 
@@ -330,7 +336,6 @@ public class AbcParser {
             String keyString = ctx.string().getText().trim();
             score.setKey(keyString);
             key = Key.lookup(keyString);
-            System.err.printf("KEY: '%s'\n", key);
         }
 
         @Override

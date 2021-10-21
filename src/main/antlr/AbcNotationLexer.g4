@@ -29,7 +29,7 @@ MeterSymbol:        'M:';
 LengthSymbol:       'L:';
 KeySymbol:          'K:'  ->mode(STRING_MODE);
 NotesSymbol:        'N:'  ->mode(STRING_MODE);
-VoiceSymbol:        'V:'  ->mode(STRING_MODE);
+VoiceSymbol:        'V:'  ->mode(LINE_MODE);
 ComposerSymbol:     'C:'  ->mode(STRING_MODE);
 TempoSymbol:        'Q:';
 // skip all not supported symbols.
@@ -82,3 +82,8 @@ STRING_MODE_EXIT: (NEWLINE | '"' | ']' ) ->mode(DEFAULT_MODE);
 STRING_MODE_COMMENT: '%' ~[\r\n]* {System.out.println("lc > " + getText());}->skip;
 STRING: (ID | INT | WS | [-_;,/.$§!?=&()] | '|' )+;
 ID: [a-zA-Z \u00C4 \u00D6 \u00DC \u00E4 \u00F6 \u00FC]+;
+
+mode LINE_MODE;
+LINE_MODE_EXIT: NEWLINE ->mode(DEFAULT_MODE);
+LINE: (~('\n'))+;
+

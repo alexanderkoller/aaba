@@ -96,6 +96,7 @@ public class AbcWriter {
         try {
             String abc = engine.process(abcTemplateResourceName, new MapBindings(bindings));
             writer.write(abc);
+            writer.flush();
         } catch (CarrotException e) {
             throw new IllegalArgumentException(e);
         }

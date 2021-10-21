@@ -4,8 +4,8 @@ T:{{ title }}
 C:{{ composer }}
 M:{{ timesig }}
 L:1/8
-K:{{ key }}
-{% if tempo != null %}Q:{{ tempo }}{% endif %}
+K:{{ key }}{% if tempo != null %}
+Q:{{ tempo }}{% endif %}
 V:Tn {{ clefspec[0] }} name="Tn"  snm=""
 V:Ld {{ clefspec[0] }} name="Ld"  snm=""
 V:Br {{ clefspec[1] }} name="Br"  snm=""

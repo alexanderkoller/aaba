@@ -24,7 +24,7 @@ endOfLine: NEWLINE | COMMENT;
 tune: header (voice)+ ;
 // voiceInfo example: V: left hand
 voice: (voiceInfo score*);
-voiceInfo: VoiceSymbol text=STRING STRING_MODE_EXIT;
+voiceInfo: VoiceSymbol text=LINE LINE_MODE_EXIT;
 score:(bar suppresScoreLinebreak?)+ (NEWLINE | EOF);
 // >---END OF TUNE
 

@@ -56,7 +56,7 @@ public class Arrange {
         System.out.printf("Reading melody and chords from: %s\n", arguments.inputFilename);
         System.out.printf("Writing arrangement to: %s\n\n", arguments.outputFilename);
 
-        Score score = new AbcParser().read(new FileReader(arguments.inputFilename));
+        Score score = new AbcParser().readA(new FileReader(arguments.inputFilename));
         Arrange arranger = new Arrange(config);
         Arrangement bestArrangement = arranger.arrange(score);
 
