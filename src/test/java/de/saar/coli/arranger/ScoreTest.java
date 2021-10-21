@@ -70,6 +70,7 @@ public class ScoreTest {
                     "C:AK\n" +
                     "M:4/4\n" +
                     "K:C\n" +
+                    "V:1\n" +
                     "\"C\" C,2 d''2 _E2 ^F2 | \"G7\" C2 D2 |]";
 
     private static final String S1 = "Tn: E5:2\n" +
