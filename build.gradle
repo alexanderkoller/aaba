@@ -46,14 +46,6 @@ javadoc {
 }
 
 
-
-// // configuration for Heroku
-// task stage(dependsOn: ['build', 'clean'])
-// build.mustRunAfter clean
-
-
-
-
 // https://github.com/heroku/heroku-gradle
 // To deploy, run "./gradlew build deployHeroku"
 heroku {

@@ -42,3 +42,13 @@ There is quite a bit of software for editing, viewing, and playing ABC files. Yo
 ## Documentation
 
 Check out the [Github wiki](https://github.com/alexanderkoller/aaba/wiki) and the [Javadoc](https://alexanderkoller.github.io/aaba/javadoc/index.html) for more details.
+
+## Deploying to Heroku
+
+A demo of AABA always runs on [Heroku](https://aaba-demo.herokuapp.com/). To redeploy the current version of AABA to Heroku after making changes, run the following:
+
+```
+$ heroku login
+$ ./gradlew build deployHeroku
+```
+
