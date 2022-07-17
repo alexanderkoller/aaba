@@ -1,1 +1,0 @@
-web: java -cp build/libs/aaba-1.2-SNAPSHOT-all.jar de.saar.coli.arranger.web.Server

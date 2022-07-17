@@ -47,21 +47,21 @@ javadoc {
 
 
 
-// configuration for Heroku
-task stage(dependsOn: ['build', 'clean'])
-build.mustRunAfter clean
+// // configuration for Heroku
+// task stage(dependsOn: ['build', 'clean'])
+// build.mustRunAfter clean
 
 
 
 
-// // https://github.com/heroku/heroku-gradle
-// // To deploy, run "./gradlew build deployHeroku"
-// heroku {
-//     appName = "aaba-demo"
-//     jdkVersion = 11
-//     includes = ["build/libs/aaba-${version}-all.jar".toString()]
-//     includeBuildDir = false
-//     processTypes(
-//             web: "java -cp build/libs/aaba-${version}-all.jar de.saar.coli.arranger.web.Server".toString()
-//     )
-// }
+// https://github.com/heroku/heroku-gradle
+// To deploy, run "./gradlew build deployHeroku"
+heroku {
+    appName = "aaba-demo"
+    jdkVersion = 11
+    includes = ["build/libs/aaba-${version}-all.jar".toString()]
+    includeBuildDir = false
+    processTypes(
+            web: "java -cp build/libs/aaba-${version}-all.jar de.saar.coli.arranger.web.Server".toString()
+    )
+}
