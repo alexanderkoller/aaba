@@ -21,6 +21,8 @@
 
 {% if error != null %}<p style="color:red">Error: {{ error }}</p>{% endif %}
 
+{% if error_details != null %}<p style="color:red">Error Details: {{ error_details }}</p>{% endif %}
+
 <form action="/" method="post">
     <p><textarea name="input_abc" rows="10" cols="120">{% if form != null %}{{ form.input_abc() }}{% endif %}</textarea></p>
     <input type="submit" name="submit" />

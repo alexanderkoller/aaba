@@ -96,7 +96,7 @@ public class Server {
         } catch (Throwable e) {
             // catch-all
             e.printStackTrace();
-            ctx.html(renderIndex(Map.of("error", "Unexpected error: " + e.toString())));
+            ctx.html(renderIndex(Map.of("error", "Unexpected error: " + Util.getStacktrace(e))));
         }
     }
 
