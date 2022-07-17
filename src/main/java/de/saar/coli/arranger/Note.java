@@ -158,7 +158,17 @@ public class Note {
      * @return
      */
     public static String getNoteName(int relativeNote) {
-        return NOTE_NAMES.get(relativeNote);
+        if( relativeNote < NOTE_NAMES.size() && relativeNote >= 0 ) {
+            return NOTE_NAMES.get(relativeNote);
+        } else {
+            throw new UnknownNoteNumberException(relativeNote);
+        }
+    }
+
+    public static class UnknownNoteNumberException extends RuntimeException {
+        public UnknownNoteNumberException(int relativeNote) {
+            super(String.format("<%d>", relativeNote));
+        }
     }
 
     /**
@@ -240,7 +250,19 @@ public class Note {
      * @return
      */
     public static int getNoteId(String noteName) {
-        return NOTE_NAMES.indexOf(noteName);
+        int ret = NOTE_NAMES.indexOf(noteName);
+
+        if( ret == -1 ) {
+            throw new UnknownNoteNameException(noteName);
+        } else {
+            return ret;
+        }
+    }
+
+    public static class UnknownNoteNameException extends RuntimeException {
+        public UnknownNoteNameException(String noteName) {
+            super(noteName);
+        }
     }
 
     /**

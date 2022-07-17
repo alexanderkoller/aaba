@@ -89,15 +89,15 @@ public class Server {
             } catch (NoValidArrangementException e) {
                 e.printStackTrace();
                 ctx.html(renderIndex(Map.of("form", form, "original_abc", form.input_abc(), "error", "Could not find a valid arrangement.")));
+            } catch (Throwable e) {
+                // catch-all
+                e.printStackTrace();
+                ctx.html(renderIndex(Map.of("form", form, "error", "Unexpected error: " + Util.getStacktrace(e))));
             }
         } catch (FormValidationException e) {
             e.printStackTrace();
             ctx.html(renderIndex(Map.of("error", "Please enter a song in ABC format.")));
-        } catch (Throwable e) {
-            // catch-all
-            e.printStackTrace();
-            ctx.html(renderIndex(Map.of("error", "Unexpected error: " + Util.getStacktrace(e))));
-        }
+        } 
     }
 
     private String renderIndex(Map<String,Object> parameters) {

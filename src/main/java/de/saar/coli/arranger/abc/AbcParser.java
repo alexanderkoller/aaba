@@ -196,7 +196,7 @@ public class AbcParser {
                 Chord chord = Chord.lookup(chordStr);
 
                 if (chord == null) {
-                    System.err.printf("Warning: unknown chord '%s' at time %d.\n", chordStr, timeInEighths);
+                    throw new RuntimeException(String.format("Unknown chord '%s' at time %d.\n", chordStr, timeInEighths));
                 } else {
                     score.addChord(timeInEighths, chord);
                 }

@@ -269,7 +269,7 @@ public class Chord {
 
     @Override
     public String toString() {
-//        System.err.printf("root: %d, type: %s\n", root, type.name); // debugging #7
-        return Note.getNoteName(root) + type.name;
+        String rootName = Note.getNoteName(root);
+        return rootName + type.name;
     }
 }
