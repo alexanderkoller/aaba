@@ -93,6 +93,10 @@ public class Server {
         } catch (FormValidationException e) {
             e.printStackTrace();
             ctx.html(renderIndex(Map.of("error", "Please enter a song in ABC format.")));
+        } catch (Throwable e) {
+            // catch-all
+            e.printStackTrace();
+            ctx.html(renderIndex(Map.of("error", "Unexpected error: " + e.toString())));
         }
     }
 
